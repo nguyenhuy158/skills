@@ -1,35 +1,70 @@
 # Agent Skills
 
-This repository contains a collection of specialized skills designed to enhance the capabilities of the AI agent. Each skill provides specific instructions, guidelines, and best practices for particular tasks.
+Collection of specialized skills to enhance AI agent capabilities.
+
+```mermaid
+graph TD
+    Repo[Agent Skills] -->|Loads| Skill1[Copilot Commit Style]
+    Repo -->|Loads| Skill2[Odoo Code Reviewer]
+    
+    Skill1 -->|Action| Enforce[Strict Commit Format]
+    Skill2 -->|Action| Audit[Odoo Code Audit]
+```
 
 ## Available Skills
 
 ### 1. Copilot Commit Style
 **Directory:** `copilot-commit-style/`
 
-This skill enforces a strict commit message format based on the [Conventional Commits](https://www.conventionalcommits.org/) specification. It ensures that all commit messages are consistent, descriptive, and include relevant emojis.
+Enforces [Conventional Commits](https://www.conventionalcommits.org/).
 
-**Format:**
-```
-<emoji> <type>(<scope>): <description>
+```mermaid
+graph LR
+    Msg["✨ feat(auth): add OAuth2 login flow"]
+    
+    subgraph Structure
+    Emoji((Emoji)) --> Type[Type]
+    Type --> Scope[Scope]
+    Scope --> Desc[Description]
+    end
+
+    style Emoji fill:#ff9,stroke:#333
+    style Type fill:#bbf,stroke:#333
+    style Scope fill:#dfd,stroke:#333
+    style Desc fill:#fdd,stroke:#333
 ```
 
-**Examples:**
-* `✨ feat(auth): add OAuth2 login flow`
-* `🐛 fix(api): resolve memory leak in worker`
-* `📝 docs(readme): update installation guide`
+**Key Rules:**
+*   **Emoji** Required
+*   **Lowercase** Type
+*   **Max 80** characters
 
 ### 2. Odoo Code Reviewer
 **Directory:** `odoo-reviewer/`
 
-This skill acts as an expert reviewer for Odoo development projects. It provides comprehensive guidelines for auditing Python models, controllers, and XML views/data files.
+Expert reviewer for Odoo development projects.
 
-**Key Focus Areas:**
-* **Python:** PEP8 compliance, Odoo ORM best practices (using `filtered`, `mapped`, avoiding direct SQL), and proper field naming conventions.
-* **XML:** concise XPath expressions, correct attribute usage, and data file structure.
-* **Manifest:** dependency management and file ordering.
-* **Security & Performance:** checks for access rights and N+1 query issues.
+```mermaid
+mindmap
+  root((Odoo Review))
+    Python
+      PEP8 & Naming
+      ORM Best Practices
+      No Direct SQL
+    XML
+      Concise XPath
+      No Hardcoded IDs
+      Correct Attributes
+    Manifest
+      Depends
+      Data Order
+      License
+    Critical Checks
+      Security (Access Rights)
+      Performance (N+1)
+      Idempotency
+```
 
 ## Usage
 
-These skills are intended to be loaded by the agent when specific tasks are requested. The `SKILL.md` file in each directory contains the detailed prompt and instructions for that specific skill.
+Agents load these skills from the `SKILL.md` file in each directory when specific tasks are requested.
