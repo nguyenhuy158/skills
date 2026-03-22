@@ -6,9 +6,11 @@ Collection of specialized skills to enhance AI agent capabilities.
 graph TD
     Repo[Agent Skills] -->|Loads| Skill1[Copilot Commit Style]
     Repo -->|Loads| Skill2[Odoo Code Reviewer]
-    
+    Repo -->|Loads| Skill3[Introduction]
+
     Skill1 -->|Action| Enforce[Strict Commit Format]
     Skill2 -->|Action| Audit[Odoo Code Audit]
+    Skill3 -->|Action| Introduce[Draft Introductions]
 ```
 
 ## Available Skills
@@ -64,6 +66,33 @@ mindmap
       Performance (N+1)
       Idempotency
 ```
+
+### 3. Introduction
+**Directory:** `introduction/`
+
+Drafts clear, structured introductions for people, projects, products, or teams — in English and Vietnamese.
+
+```mermaid
+graph LR
+    Input["Request: introduce yourself / project / team"]
+
+    subgraph Types
+    Self[Self-Introduction]
+    Project[Project Introduction]
+    Product[Product Introduction]
+    Team[Team Introduction]
+    end
+
+    Input --> Self
+    Input --> Project
+    Input --> Product
+    Input --> Team
+```
+
+**Key Rules:**
+*   **Concise** Lead with value, avoid filler
+*   **Audience-aware** Formal or friendly tone as needed
+*   **Bilingual** Supports English and Vietnamese
 
 ## Usage
 
