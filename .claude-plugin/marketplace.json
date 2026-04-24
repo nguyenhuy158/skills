@@ -1,0 +1,24 @@
+{
+  "name": "nguyenhuy158-skills",
+  "owner": {
+    "name": "Huy Nguyen",
+    "email": "huy.ntq02@gmail.com"
+  },
+  "metadata": {
+    "description": "Claude Code plugins by nguyenhuy158",
+    "pluginRoot": "./plugins"
+  },
+  "plugins": [
+    {
+      "name": "workflow",
+      "source": "./plugins/workflow",
+      "description": "Git workflow, PR creation, security review, and Odoo code review skills",
+      "version": "1.0.0",
+      "author": {
+        "name": "Huy Nguyen",
+        "email": "huy.ntq02@gmail.com"
+      },
+      "homepage": "https://github.com/nguyenhuy158/nguyenhuy158-skills"
+    }
+  ]
+}

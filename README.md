@@ -85,10 +85,41 @@ Creates GitHub pull requests with simple English title and body.
 
 Agents load these skills from the `SKILL.md` file in each directory when specific tasks are requested.
 
-## Installing on another PC
+## Installation
 
-```bash
-git clone <this-repo-url> ~/.claude/skills/agent-skills
+### Plugin Marketplace (recommended)
+
+```
+/plugin marketplace add nguyenhuy158/skills
+/plugin install workflow@skills
 ```
 
-Then add each skill to Claude Code via `claude skills add <path/to/SKILL.md>` or reference the path in your Claude config.
+Skills available after install:
+
+| Slash command | Description |
+|---|---|
+| `/workflow:ship-ready` | Prepare branch and create PR |
+| `/workflow:git-branch-clean` | Delete stale local branches |
+| `/workflow:security-review` | OWASP Top 10 security audit |
+| `/workflow:odoo-review` | Odoo Python & XML code review |
+| `/workflow:commit-style` | Enforce Conventional Commits format |
+
+### Update
+
+```
+/plugin marketplace update nguyenhuy158/skills
+```
+
+Or reinstall:
+
+```
+/plugin install workflow@skills
+```
+
+### Manual (alternative)
+
+```bash
+git clone https://github.com/nguyenhuy158/skills ~/.claude/skills/nguyenhuy158-skills
+```
+
+Then reference each `SKILL.md` path in your Claude config.

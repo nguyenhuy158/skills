@@ -1,0 +1,13 @@
+{
+  "name": "workflow",
+  "version": "1.0.0",
+  "description": "Git workflow, PR creation, security review, and Odoo code review skills",
+  "author": {
+    "name": "Huy Nguyen",
+    "email": "huy.ntq02@gmail.com"
+  },
+  "homepage": "https://github.com/nguyenhuy158/nguyenhuy158-skills",
+  "repository": "https://github.com/nguyenhuy158/nguyenhuy158-skills",
+  "license": "MIT",
+  "keywords": ["workflow", "git", "pr", "security", "odoo", "review"]
+}
