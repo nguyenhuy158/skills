@@ -6,9 +6,11 @@ Collection of specialized skills to enhance AI agent capabilities.
 graph TD
     Repo[Agent Skills] -->|Loads| Skill1[Copilot Commit Style]
     Repo -->|Loads| Skill2[Odoo Code Reviewer]
+    Repo -->|Loads| Skill3[PR Creator]
     
     Skill1 -->|Action| Enforce[Strict Commit Format]
     Skill2 -->|Action| Audit[Odoo Code Audit]
+    Skill3 -->|Action| PR[Create GitHub PR]
 ```
 
 ## Available Skills
@@ -65,6 +67,28 @@ mindmap
       Idempotency
 ```
 
+### 3. PR Creator
+**Directory:** `pr-creator/`
+
+Creates GitHub pull requests with simple English title and body.
+
+**Flow:**
+1. Ask for destination branch if not specified
+2. Check git status and push state — confirm with user if not clean
+3. Push branch if needed
+4. Generate short title + body from commits/diff
+5. Run `gh pr create` and return URL
+
+**Triggers:** "create PR", "open PR", "make pull request", "tạo PR"
+
 ## Usage
 
 Agents load these skills from the `SKILL.md` file in each directory when specific tasks are requested.
+
+## Installing on another PC
+
+```bash
+git clone <this-repo-url> ~/.claude/skills/agent-skills
+```
+
+Then add each skill to Claude Code via `claude skills add <path/to/SKILL.md>` or reference the path in your Claude config.
