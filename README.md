@@ -103,6 +103,7 @@ Skills available after install:
 | `/workflow:security-review` | OWASP Top 10 security audit |
 | `/workflow:odoo-review` | Odoo Python & XML code review |
 | `/workflow:commit-style` | Enforce Conventional Commits format |
+| `/workflow:code-polish` | Remove comments, extract constants, self-documenting Python |
 
 ### Update
 
