@@ -1,0 +1,4 @@
+interface:
+  display_name: "Docker Clean Safe"
+  short_description: "Inspect, confirm, then safely clean Docker"
+  default_prompt: "Use $docker-clean-safe to inventory unused Docker resources, explain impact and recovery, obtain my explicit confirmation, then clean while preserving running containers and farmnet:local."
