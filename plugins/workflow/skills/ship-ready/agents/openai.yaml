@@ -1,0 +1,4 @@
+interface:
+  display_name: "Ship Ready"
+  short_description: "Validate, ship, and quickly review a ready PR"
+  default_prompt: "Use $ship-ready to fully validate this code, create a convention-named branch, commit, push, open a ready PR to main, and finish with a quick numbered review."
