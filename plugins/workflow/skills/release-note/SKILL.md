@@ -1,6 +1,6 @@
 ---
 name: release-note
-description: Draft the Vietnamese production release note for FarmNet from one or more release tags, letting the user pick which PRs to include. Use when asked for a "release note", "note release", "phát hành", or given release versions like "v2.1.5 v2.1.6".
+description: Draft the Vietnamese production release note for FarmNet from one release tag or a range, letting the user pick which changes to include. Use when asked for a "release note", "note release", "changelog", or given release versions like "v2.1.5 v2.1.6".
 ---
 
 # FarmNet Release Note
@@ -11,34 +11,26 @@ Turn one or more `release/vX.Y.Z` tags into the Slack release-note message the t
 
 - **Never filter by PR author.** Every PR in range is a candidate. The user decides what ships in the note.
 - Output language: **Vietnamese**, business wording. No PR numbers, no file paths, no module names in the final note.
-- Group by what the user sees (screen / feature area), not by commit.
+- **Name screens by their exact UI label** the user sees in the app — `Sale Orders`, `Settlement`, `Cashflow`, `Contacts`. Never a module name (`farmnet_sale_order`), never an invented Vietnamese screen name. Unsure? Look it up in the PR body, or in the view/menu file (`<menuitem name="…">`, `string="…"`) — don't guess. A wrong screen name is the #1 thing users complain about.
 
 ## Steps
 
 ### 1. Resolve the range
 
-Versions come from what the user typed when invoking (e.g. `v2.1.5 v2.1.6`). If none given, use every release published since the last one the user noted — ask if unclear.
+Versions come from what the user typed when invoking. No version given → **stop and ask**; don't assume a range.
 
 ```bash
 git fetch origin --tags -q
-gh release list --limit 20
 ```
 
-For each version, pull its body — it already lists the PRs:
+- **One version** — `gh release view release/vX.Y.Z --json body,publishedAt -q '.body'`
+- **A range** — one command, no per-release loop:
 
 ```bash
-gh release view release/<version> --json body,publishedAt -q '.body'
+git log --format='%s' release/<from>..release/<to> | grep -oE '#[0-9]+' | sort -u
 ```
 
-If a body is empty or missing PR links, fall back to:
-
-```bash
-git log --oneline release/<prev>..release/<version>
-```
-
-### 2. Read every PR
-
-For each PR number in range, read title + body. Batch them in one call:
+### 2. Read every PR in full
 
 ```bash
 for n in <numbers>; do
@@ -47,19 +39,24 @@ for n in <numbers>; do
 done
 ```
 
-Skip nothing at this stage — infra/CI PRs get dropped in step 3, not here.
+Read the whole **What / Change** section, not the title. **One PR often carries several user-visible changes** — pull each one out of the sub-bullets. Skip nothing here; dropping happens in step 3.
 
-### 3. Let the user pick
+### 3. Decide what's user-visible
 
-Show a compact numbered table of every PR: number, author, and a one-line Vietnamese guess at the user-facing impact. Mark the ones you'd drop (CI, chore, refactor, internal tooling — nothing a user would notice) with `(nội bộ)`.
+Test: **does the end-user SEE something different in the app** — a number, a document, a record, a column, a button? Not "did someone do work".
 
-Then use AskUserQuestion — or a plain list if there are many — to confirm which to include. Default selection = everything not marked `(nội bộ)`. If the user says "all" or "cứ vậy đi", go with the default.
+- **Keep** one-off data corrections when the result is visible: one document gets a missing field filled, a batch of debt figures corrected. Name the exact document or screen.
+- **Drop** only when the user sees nothing at all: infra/deploy/CI, refactors with no behavior change, log noise, internal tooling.
 
-### 4. Write the note
+### 4. Let the user pick
 
-Merge the selected PRs into themes. One theme per numbered section, named after the screen or business area. Bug fixes with no shared theme go into a trailing "Sửa lỗi" bullet list.
+Present a compact table (PR, author, one-line Vietnamese impact), marking drops as `(nội bộ)`. Then confirm with **`AskUserQuestion`, always `multiSelect: true`** — one option per user-visible change, label = the English screen name, description = the one-line business summary. Max 4 options per question, so **split into several multiSelect questions inside the same call**. Pre-suggest everything user-visible; the user unticks. Never make the user type numbers.
 
-Format exactly:
+"all" / "cứ vậy đi" → take the default.
+
+### 5. Write the note
+
+Merge the selected changes into themes, one numbered section per screen or business area. Bug fixes with no shared theme go into a trailing "Sửa lỗi" bullet list. State **benefit + what the user does**, not the mechanism.
 
 ```
 Dear team,
@@ -73,14 +70,24 @@ Production update ngày <DD/MM/YYYY> — deploy release <v1> & <v2>:
 
 <N>. Sửa lỗi <mô tả ngắn>.
 
+Nhờ team lưu ý <màn hình / thao tác quan trọng>.
+
 Thank you.
 ```
 
 Date = today, not the tag date, unless the user says otherwise.
 
-### 5. Hand it over
+### 6. Hand it over and check
 
-Print the note in a fenced block so it can be copied straight into Slack. Do **not** post it anywhere. List separately which PRs you left out — **including every PR you auto-marked `(nội bộ)`**, not only the ones the user deselected — so nothing disappears without the user seeing it.
+Print the note in a fenced block, ready to copy into Slack. Do **not** post it anywhere.
+
+Then, outside the note, list which PRs you left out — **including every one you auto-marked `(nội bộ)`**, not only what the user deselected — so nothing disappears unseen.
+
+Review once before handing over:
+- Only the selected changes are in the note; nothing silently re-added.
+- Every user-visible action from the selected PRs has a line — including the second and third change hidden inside one PR.
+- No visible data-correction dropped just for being "a data fix".
+- Every screen named with its real UI label; no module names, no invented names.
 
 ## Style notes
 
