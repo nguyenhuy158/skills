@@ -104,6 +104,7 @@ Skills available after install:
 | `/workflow:odoo-review` | Odoo Python & XML code review |
 | `/workflow:commit-style` | Enforce Conventional Commits format |
 | `/workflow:code-polish` | Remove comments, extract constants, self-documenting Python |
+| `/workflow:release-note` | Draft the Vietnamese production release note from release tags |
 
 ### Update
 
