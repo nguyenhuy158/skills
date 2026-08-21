@@ -7,10 +7,12 @@ graph TD
     Repo[Agent Skills] -->|Loads| Skill1[Copilot Commit Style]
     Repo -->|Loads| Skill2[Odoo Code Reviewer]
     Repo -->|Loads| Skill3[PR Creator]
-    
+    Repo -->|Loads| Skill4[Introduction]
+
     Skill1 -->|Action| Enforce[Strict Commit Format]
     Skill2 -->|Action| Audit[Odoo Code Audit]
     Skill3 -->|Action| PR[Create GitHub PR]
+    Skill4 -->|Action| Introduce[Draft Introductions]
 ```
 
 ## Available Skills
@@ -81,6 +83,33 @@ Creates GitHub pull requests with simple English title and body.
 
 **Triggers:** "create PR", "open PR", "make pull request", "tạo PR"
 
+### 4. Introduction
+**Directory:** `plugins/workflow/skills/introduction/`
+
+Drafts clear, structured introductions for people, projects, products, or teams — in English and Vietnamese.
+
+```mermaid
+graph LR
+    Input["Request: introduce yourself / project / team"]
+
+    subgraph Types
+    Self[Self-Introduction]
+    Project[Project Introduction]
+    Product[Product Introduction]
+    Team[Team Introduction]
+    end
+
+    Input --> Self
+    Input --> Project
+    Input --> Product
+    Input --> Team
+```
+
+**Key Rules:**
+*   **Concise** Lead with value, avoid filler
+*   **Audience-aware** Formal or friendly tone as needed
+*   **Bilingual** Supports English and Vietnamese
+
 ## Usage
 
 Agents load these skills from the `SKILL.md` file in each directory when specific tasks are requested.
@@ -105,6 +134,7 @@ Skills available after install:
 | `/workflow:commit-style` | Enforce Conventional Commits format |
 | `/workflow:code-polish` | Remove comments, extract constants, self-documenting Python |
 | `/workflow:release-note` | Draft the Vietnamese production release note from release tags |
+| `/workflow:introduction` | Draft introductions for people, projects, products, teams |
 
 ### Update
 
