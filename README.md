@@ -137,6 +137,8 @@ Skills available after install:
 | `/workflow:release-note` | Draft the Vietnamese production release note from release tags |
 | `/workflow:introduction` | Draft introductions for people, projects, products, teams |
 | `/workflow:retro` | Distil session lessons into hindsight memory, deduping against what is already stored |
+| `/workflow:pr-ship-loop` | Ship a change end-to-end: worktree, gate, PR, bot reviews, CI watch, cleanup |
+| `/workflow:orca-pr-ship-loop` | Full PR shipping cockpit via Orca CLI: cards, embedded browser, watcher terminal, cleanup |
 
 ### Update
 
