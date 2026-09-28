@@ -46,6 +46,14 @@ Prefer `--json` for programmatic inspection.
 Start every reply of the loop with one line: `Ship loop: step <X.Y>/9 — <step name> · PR #<N> · skills: <used>`.
 The user cannot hold the loop position between turns; this line is the source of truth.
 
+**End every reply of the loop with a links block**, whenever the item exists (omit a line only if it does not exist yet):
+```
+🔗 PR:   https://github.com/<owner>/<repo>/pull/<N>
+🖥️ Odoo: http://<container-name>.localhost  (admin/admin)
+```
+The Odoo line is the worktree's local URL printed by `make wt-proxy` (never `localhost:<port>`); drop it once
+step 8 has torn the stack down.
+
 **Before each action**, announce the exact sub-step it belongs to, at the deepest level that exists
 (`Step 1.3 — checking root DB freshness`, `Step 2.2 — Orca browser smoke test`, `Step 5.1 — triage table`).
 Never run a command without its step number; never report "step 2" when the work is 2.3.
@@ -61,6 +69,14 @@ runs as a **background job** (`bash` with `async: true`): DB clone, `make test-f
   state the command, the expected duration, and why; run with the longer timeout only after a yes.
   One yes covers the same command for the rest of the PR (e.g. every rerun of `make test-fresh`).
 - A job killed by the 30 s timeout is not a failure of the code: report it and ask whether to rerun longer.
+- **Two timed-out waits on the same job = stop.** After the second `wait` that returns
+  "still running", never issue a third. Read its output (`hub logs`), check the underlying
+  system directly (deploy API, `docker ps`, `curl` the URL, `gh run view`), and report to the
+  user: how long it has run, what the logs say, what the direct check says, and 2–3 options
+  (keep waiting N minutes / kill and retry / investigate X). Waiting in a loop hides a job that
+  finished its work but never exits, and burns the turn.
+- A supervised process that already printed its success markers (e.g. `deploy:done`, `http:200`)
+  is done: read the markers, kill it, move on — do not wait for the process to exit.
 - **Do not spawn subagents** (`task` tool) for any step of this loop. Subagents start blind, cannot see
   the conversation or the user's decisions at gates 1.3 / 2.3 / 7, and make the loop position unclear.
 - Short commands (≤ 10 s) run in the foreground.

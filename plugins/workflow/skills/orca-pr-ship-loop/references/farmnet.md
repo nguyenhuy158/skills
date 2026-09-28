@@ -54,9 +54,12 @@ Newest value older than 2 days → ask the user: use stale data, or sync the roo
 
 ### DB clone traps
 
-- `No such container: fnp-db-1` → the stale container is gone; clone from `dev-postgres`:
+- **ALWAYS clone from `dev-postgres`** (the main checkout's DB). `make wt-db-clone` does NOT read the root
+  `dev/.env`: `Makefile:61` hardcodes `FNP_DB_CONTAINER ?= fnp-db-1` (stale, ~2 weeks behind) and the new
+  worktree's `dev/.env` has `DB_HOST=db`. Bare `make wt-db-clone` = stale data. Use exactly:
   `rtk make wt-db-clone FNP_DB_CONTAINER=dev-postgres DB_HOST=localhost DB_PORT=5432 DB_PASSWORD=farmnet`
   (`DB_PASSWORD=odoo` fails auth; read the real one with `docker inspect dev-postgres` → `POSTGRES_PASSWORD`).
+  Freshness check (1.3) and clone MUST hit the same container.
 - `server closed the connection unexpectedly` mid-clone → Docker/OrbStack died; `orb start`, then rerun.
 - `wt-up` needs `DB_PASSWORD=farmnet` as a make argument, not an env prefix.
 - **Downgrade guard** (`N module(s) are older in this image than in the database — refusing to auto -u`,
