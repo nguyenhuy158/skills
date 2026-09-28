@@ -88,6 +88,11 @@ Any step that needs a browser (UI test, login, user switch, GitHub attachment up
 **`browser-use` CLI only** — never the Orca embedded browser, the harness `browser` object, Playwright/Puppeteer,
 or another app. `browser-use` broken → ask the user to check it; never fall back.
 
+**Never steal the user's focus**: do not call `activate_tab()` (CDP `Target.activateTarget`) or `headed`/foreground
+helpers. They pull Chrome to the front on every call while the user works in other apps. Pick the tab with
+`switch_tab(<targetId>)` only; `capture_screenshot`, `js`, `cdp` and drag-drop upload all work on a background tab.
+Set the viewport (`Emulation.setDeviceMetricsOverride`) inside every call: a shared Chrome may reset it between calls.
+
 ### Test data priority (UI/data tests)
 
 Use the fastest real data first; build from scratch only as the last resort:
@@ -238,6 +243,11 @@ If Docker dies later (`docker.sock: no such file`), restart it and rerun only th
      re-check who may act inside the action method.
    - **Other entry points**: controllers/APIs/crons calling the same method must get a correct result or an explicit error.
    - **Multi-record assumptions**: `[:1]`, `ensure_one()` — confirm the data model really is single.
+   - **Migration only when prod needs it**: before writing a migration or data backfill, query **prod**
+     (read-only, e.g. the `odoo_prod` MCP `search_records`) for rows the change would fix. Prod has none →
+     no migration, no version bump. Fix dev/local data with a one-off hotfix (SQL/RPC on that env) or a DB
+     restore instead, and say which in the status line. Write the migration only when prod actually holds
+     the broken data.
 
 ---
 
@@ -354,8 +364,8 @@ Merging is strictly a human decision.
    - Keep box chars aligned (monospace); wrap the chart in a fenced code block.
    - **UI task → attach the step 2.2 screenshots as GitHub user-attachments**, using the `browser-use` CLI only:
      1. Write the body text first with `gh pr edit <N> --body-file <scratchpad>/pr-body.md`.
-     2. `browser-use`: `new_tab("https://github.com/<owner>/<repo>/pull/<N>")` in the user's logged-in Chrome,
-        `activate_tab(current_tab())`, scroll the **new comment** box `#new_comment_field` into view.
+     2. `browser-use`: `new_tab("https://github.com/<owner>/<repo>/pull/<N>")` in the user's logged-in Chrome
+        (then `switch_tab`, never `activate_tab`), scroll the **new comment** box `#new_comment_field` into view.
      3. Upload by **drag-and-drop** (the only reliable path; `setFileInputFiles` + `change` does not trigger
         GitHub's uploader, and the `…` → Edit menu is ambiguous): for each PNG, `cdp("Input.dispatchDragEvent",
         type=…, x, y, data={"items": [], "files": [path], "dragOperationsMask": 1})` for `dragEnter`, `dragOver`,

@@ -93,7 +93,8 @@ Newest value older than 2 days → ask the user: use stale data, or sync the roo
    (`make wt-db-clone …`), restart the stack, retry step 1.
 4. Take the step 2.2 screenshots while testing; continue the loop without waiting on the user.
 5. `browser-use` gotchas seen on Odoo:
-   - Screenshots of a background tab can be a stale frame → `activate_tab(current_tab())` before `capture_screenshot`.
+   - Never `activate_tab()` — it steals the user's focus. Background-tab screenshots and uploads worked (2026-09-28);
+     if a frame looks stale, reload the tab and wait for the element, do not activate it.
    - New/changed JS/SCSS not applied → open with `?debug=assets` and reload bypassing cache
      (`cdp("Network.setCacheDisabled", cacheDisabled=True)`, `cdp("Page.reload", ignoreCache=True)`).
    - Many2one in a dialog: type into its input + dispatch `input`, then click the dropdown item by box center.
