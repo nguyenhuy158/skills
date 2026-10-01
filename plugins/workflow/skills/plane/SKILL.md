@@ -145,11 +145,19 @@ English task: `Context:` / `Symptom:` and the same items in English.
 | Done | On prod: release shipped, or hotfix verified |
 | Cancelled | Dropped — comment why |
 
-## Relations
+## Task buttons: MCP or browser-use
 
-- `Relates to` / `Duplicate of` / `Blocked by` / `Blocking`: Plane web UI through browser-use →
-  `references/relations.md`.
-- Parent / sub-item: `parent=` on create or update.
+The four buttons under a task's description, and which tool does each:
+
+| Button | Tool | How |
+|---|---|---|
+| Add sub-work item | MCP | `workitem create … parent=<parent id>` (or `update parent=` on an existing item) |
+| Add relation | **browser-use** | `references/relations.md` — the MCP has no `Relates to` / `Duplicate of` (`workitem_relation` returns 404) |
+| Add link | MCP | `workitem_link create url=… title=…` (tested) |
+| Attach | MCP if the file has a public URL | `workitem_attachment upload_from_url url=… name=…` — Plane fetches it server-side, so no localhost, no private IP, no login |
+| Attach a local file | **browser-use** | Upload through the Attach button (not exercised yet — verify it appears with `workitem_attachment list`) |
+
+Reading attachments (`workitem_attachment list / read / download_url`) is MCP.
 
 ## Holidays
 
