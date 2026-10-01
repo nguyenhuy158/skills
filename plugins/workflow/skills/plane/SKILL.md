@@ -65,6 +65,8 @@ Labels keep their full names; only the title prefix is short: exactly 4 uppercas
    timeline: `module list_workitems` → `module update start_date=<earliest task start> target_date=<latest task due>`
    over the module's non-cancelled tasks. Do the same whenever a task's dates change or a module is cleaned up.
    Skip `Uncategorized` (holding area, no timeline).
+   Done task without dates (old data) → backfill `start_date` = date of `created_at`, `target_date` = date of
+   `completed_at` (UTC+7, moved to working days with `workdays.py`), then re-sync the module.
 5. Related tasks → `references/relations.md`.
 6. Reply in the output format below, then list every field that was defaulted.
 
