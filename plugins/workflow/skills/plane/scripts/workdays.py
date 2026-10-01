@@ -88,20 +88,33 @@ def report(start, due):
     warn_unknown_years(start, due)
 
 
+def deploy_sunday(day):
+    """Sunday of the week the work ends in: release goes out Sunday night, Monday fixes any fallout."""
+    return day + ONE_DAY * (6 - day.weekday())
+
+
 def plan(args):
     count = SIZES.get(args.size) or int(args.size)
     if count > SIZES["large"]:
         print(f"NOTE {count} working days > {SIZES['large']}: split into sub-items")
     start = next_workday(args.start or dt.date.today())
-    report(start, add_workdays(start, count))
+    work_done = add_workdays(start, count)
+    if args.size == "hotfix":
+        report(start, work_done)
+        return
+    print(f"work done {label(work_done)} -> due = deploy Sunday")
+    report(start, deploy_sunday(work_done))
 
 
 def check(args):
     if args.due < args.start:
         sys.exit("ERROR due date is before start date")
-    for name, day in (("start", args.start), ("due", args.due)):
-        if not is_workday(day):
-            print(f"INVALID {name} {label(day)} is not a working day -> next {label(next_workday(day))}")
+    if not is_workday(args.start):
+        print(f"INVALID start {label(args.start)} is not a working day -> next {label(next_workday(args.start))}")
+    if args.hotfix and not is_workday(args.due):
+        print(f"INVALID due {label(args.due)} is not a working day -> next {label(next_workday(args.due))}")
+    if not args.hotfix and args.due.weekday() != 6:
+        print(f"INVALID due {label(args.due)}: non-hotfix due is the deploy Sunday -> {label(deploy_sunday(args.due))}")
     report(args.start, args.due)
 
 
@@ -123,6 +136,7 @@ def main():
     check_parser = commands.add_parser("check", help="validate a given start/due pair")
     check_parser.add_argument("start", type=dt.date.fromisoformat)
     check_parser.add_argument("due", type=dt.date.fromisoformat)
+    check_parser.add_argument("--hotfix", action="store_true", help="hotfix/data fix: due is a working day")
     check_parser.set_defaults(handler=check)
     left_parser = commands.add_parser("left", help="working days from today to the due date")
     left_parser.add_argument("due", type=dt.date.fromisoformat)

@@ -29,7 +29,7 @@ A task is never created with any of these missing.
 | Module | Exactly one module per task — never zero, never two. Best-fitting module; unclear → `Uncategorized` (reclassify later). Sub-items take their parent's module. Moving a task: remove it from the old module, add it to the new one, then re-sync both module timelines |
 | Priority | Never `none`. urgent: prod broken or ops blocked now · high: wrong money/data or a dated commitment · medium: normal · low: nice-to-have |
 | Assignee | `member me` unless the user names someone (`member list_workspace display_name=…`) |
-| Start + Due | Working days only (no Sat/Sun, no VN public holiday). The timeline lives here only, never in the description |
+| Start + Due | Start: a working day (no Sat/Sun, no VN public holiday). Due: **hotfix / data fix** → a working day; **every other task** (bug, feature, parent) → the **Sunday** of the week the work ends — release goes out Sunday night so any fallout is fixed Monday, never a mid-week deploy that breaks before a weekend with no support. Sub-items done mid-week keep a working-day due; the parent carries the deploy Sunday. The timeline lives here only, never in the description |
 | State | `Todo` on creation; `In Progress` if work starts right now |
 | Description | One context line + checklist (templates below) |
 
@@ -51,8 +51,9 @@ Labels keep their full names; only the title prefix is short: exactly 4 uppercas
 
 1. Collect what, who asked, project, size, related tasks/PRs.
 2. Timeline (`scripts/workdays.py`; start counts as day 1):
-   - User gave dates → `workdays.py check START DUE`; settle non-working days with the user.
-   - No dates → `workdays.py plan SIZE` (add `--start` if work cannot start today). SIZE: `hotfix` (data fix, 1 day) ·
+   - User gave dates → `workdays.py check START DUE` (add `--hotfix` for hotfix / data fix); settle invalid days with the user.
+   - No dates → `workdays.py plan SIZE` (add `--start` if work cannot start today); it prints the day the work is done
+     and, for every size except `hotfix`, moves the due to that week's Sunday. SIZE: `hotfix` (data fix, 1 day) ·
      `bug` (2) · `small` feature (3) · `large` feature (5). Over 5 working days → a parent task plus sub-items
      (`parent=`) of at most 5 days each.
    - Workload: list the assignee's open items in both projects (`workitem list` with `fields`, filter client-side on
