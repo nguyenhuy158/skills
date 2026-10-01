@@ -26,7 +26,7 @@ A task is never created with any of these missing.
 | Title | `[CODE] Mô tả` — CODE is the exactly-4-letter code of the primary label (table below), uppercase A–Z only, e.g. `[SALE] Luồng phê duyệt ngoại lệ…`. Short, no ids or dates |
 | Language | By reader: task for BA/Ops (business flow, OPS label) → Vietnamese; dev-only (refactor, CI, infra) → English. Comments follow the task's language |
 | Labels | ≥1 domain label; the first one gives the title code. Nothing fits → ask to create a label (and its code), never invent a prefix |
-| Module | Best-fitting module; unclear → `Uncategorized` (reclassify later) |
+| Module | Exactly one module per task — never zero, never two. Best-fitting module; unclear → `Uncategorized` (reclassify later). Sub-items take their parent's module. Moving a task: remove it from the old module, add it to the new one, then re-sync both module timelines |
 | Priority | Never `none`. urgent: prod broken or ops blocked now · high: wrong money/data or a dated commitment · medium: normal · low: nice-to-have |
 | Assignee | `member me` unless the user names someone (`member list_workspace display_name=…`) |
 | Start + Due | Working days only (no Sat/Sun, no VN public holiday). The timeline lives here only, never in the description |
