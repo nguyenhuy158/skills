@@ -169,7 +169,7 @@ def step_dr_save(st):
     if plan["bill_ref"]:
         _expect_value("bill_id", plan["bill_ref"])
     check(_stage_ui() == "DRAFT", f"statusbar shows {_stage_ui()!r}, expected DRAFT")
-    shot = _shot(st, "disbursement-created")
+    shot = _shot(st, "disbursement-created", must_show=(name, plan["kind_label"], plan["source_name"]))
     return [
         f"DB  DR {name} id={record} type={dr_type} kind={kind} state=draft created_from={created_from} amount={amount}"
         f" repayment={repay} date={disb_date} source={plan['source_name']}",

@@ -146,7 +146,7 @@ def step_debt_save(st):
     check(int(order_lines) >= 1, f"no order line was generated for {name}")
     st["ids"].update(so=int(so_id), so_name=name, agreement=int(agreement), agreement_name=agreement_name)
     _open_debt_tab()
-    shot = _shot(st, "debt-so-saved", ".o_form_view .o_notebook")
+    shot = _shot(st, "debt-so-saved", ".o_form_view .o_notebook", must_show=(name, plan["customer_name"], plan["contact_name"]))
     return [
         f"DB  sale_order {so_id} {name} type={so_type} state=draft · {sources} source line(s) · agreement {agreement_name}"
         f" id={agreement} type={type_name} stage=new",

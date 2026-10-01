@@ -152,7 +152,7 @@ def step_do_save(st):
     ui_rows = js("[...document.querySelectorAll('.o_form_view div[name=disbursement_invoice_line_ids] .o_data_row')].length")
     check(ui_rows == int(lines), f"form shows {ui_rows} offset lines, DB has {lines}")
     st["ids"].update(disbursement=int(record), disbursement_name=name)
-    shot = _shot(st, "debt-offset-created", ".o_form_view div[name=disbursement_invoice_line_ids]")
+    shot = _shot(st, "debt-offset-created", ".o_form_view div[name=disbursement_invoice_line_ids]", must_show=(name,))
     return [
         f"DB  DR {name} id={record} type=debt_offset state=draft · {lines} offset line(s) · repayment={repay}",
         f"SHOT {shot}",

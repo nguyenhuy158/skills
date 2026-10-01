@@ -227,7 +227,24 @@ def _expect_value(field, want, scope=".o_form_view"):
     check(str(want).lower() in shown.lower(), f"{field} shows {shown!r}, expected {want!r}")
 
 
-def _shot(st, label, scroll_to=".o_form_statusbar"):
+ERROR_DIALOG_JS = (
+    "[...document.querySelectorAll('.modal .modal-title, .o_notification.border-danger, .o_notification.bg-danger')]"
+    ".filter(e=>e.getClientRects().length&&(!e.matches('.modal-title')||/error|warning|lỗi|cảnh báo/i.test(e.innerText)))"
+    ".map(e=>(e.closest('.modal')||e).innerText.replace(/\\s+/g,' ').trim()).join(' || ')"
+)
+
+
+def _shot(st, label, scroll_to=".o_form_statusbar", must_show=()):
+    """Screenshot gate: never photograph an error dialog, and every `must_show` text must be on screen (DOM),
+    so the EXPECT items that matter are proven by the script, not only by the agent reading the image."""
+    error = js(ERROR_DIALOG_JS) or ""
+    check(not error, f"error dialog on screen: {error[:300]}")
+    page = js(
+        "document.body.innerText+' '+[...document.querySelectorAll('input,textarea')]"
+        ".filter(e=>e.getClientRects().length).map(e=>e.value).join(' ')"
+    ) or ""
+    missing = [text for text in must_show if text and str(text).lower() not in page.lower()]
+    check(not missing, f"not on screen: {missing}")
     st["shot"] += 1
     path = os.path.join(st["dir"], f"{st['shot']:02d}-{label}.png")
     js(f"document.querySelector({json.dumps(scroll_to)})?.scrollIntoView({{block:'start'}})")
@@ -237,11 +254,12 @@ def _shot(st, label, scroll_to=".o_form_statusbar"):
 
 
 def _ensure_tab(st):
+    """Each run gets its own browser context (own cookies = own Odoo session), so runs can go in parallel."""
     pages = {t["targetId"] for t in cdp("Target.getTargets")["targetInfos"] if t["type"] == "page"}
-    if st.get("tab") in pages:
-        switch_tab(st["tab"])
-    else:
-        st["tab"] = new_tab(st["base"] + "/web/login")
+    if st.get("tab") not in pages:
+        st["ctx"] = cdp("Target.createBrowserContext", disposeOnDetach=False)["browserContextId"]
+        st["tab"] = cdp("Target.createTarget", url=st["base"] + "/web/login", browserContextId=st["ctx"])["targetId"]
+    switch_tab(st["tab"])
     cdp("Emulation.setDeviceMetricsOverride", width=1600, height=1000, deviceScaleFactor=1, mobile=False)
 
 
@@ -249,6 +267,12 @@ def _close_tab(st):
     if st.get("tab"):
         close_tab()
         st["tab"] = None
+    if st.get("ctx"):
+        try:
+            cdp("Target.disposeBrowserContext", browserContextId=st["ctx"])
+        except Exception:
+            pass
+        st["ctx"] = None
 
 
 def login_admin(st):

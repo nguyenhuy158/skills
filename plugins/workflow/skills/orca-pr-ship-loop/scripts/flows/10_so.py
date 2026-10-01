@@ -224,7 +224,7 @@ def step_so_save(st):
         or ""
     )
     check(plan["vendor_name"].lower() in row_text.lower(), f"the saved order line does not show the vendor: {row_text[:200]!r}")
-    shot = _shot(st, "so-line-vendor", ".o_form_view div[name=order_line]")
+    shot = _shot(st, "so-line-vendor", ".o_form_view div[name=order_line]", must_show=(name, plan["product_name"], plan["vendor_name"]))
     return [
         f"DB  sale_order {so_id} {name} state=draft · line {line_id} vendor_id={vendor} qty={qty} purchase_price={price}",
         f"DB  purchase order {po[1]} id={po[0]} state={po[2]} · sale agreement {sale_agreement_name} id={agreement}"

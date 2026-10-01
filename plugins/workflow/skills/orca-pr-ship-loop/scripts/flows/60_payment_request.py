@@ -121,7 +121,7 @@ def step_pr_open(st):
     login_admin(st)
     open_target(st, PR)
     label = expect_state(st, PR, plan["start_state"])
-    shot = _shot(st, "payment-request-start")
+    shot = _shot(st, "payment-request-start", must_show=(plan["request_name"], plan["customer_name"]))
     return [
         f"DB  {plan['request_name']} ({plan['domain_label']}) state={plan['start_state']} amount={plan['amount']}"
         f" bank={plan['bank']} ({plan['bank_state']})",

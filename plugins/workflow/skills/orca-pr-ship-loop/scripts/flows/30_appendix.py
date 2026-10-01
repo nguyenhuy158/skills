@@ -101,7 +101,9 @@ def step_ap_date(st):
     check(new_value == plan["new_date_iso"], f"line new value {new_value or 'NULL'}, expected {plan['new_date_iso']}")
     row_text = js("(document.querySelector('.o_form_view div[name=line_ids] .o_data_row')||{}).innerText||''") or ""
     check(plan["new_date_iso"] in row_text, f"the appendix line does not show {plan['new_date_iso']}: {row_text!r}")
-    shot = _shot(st, "appendix-created", ".o_form_view div[name=line_ids]")
+    check(not _dialog(), f"a dialog is still open: {_dialog()[:200]}")
+    shot = _shot(st, "appendix-created", ".o_form_view div[name=line_ids]",
+                 must_show=(st["ids"]["appendix_name"], LINE_TYPE, plan["new_date_iso"]))
     return [
         f"DB  appendix line {LINE_TYPE}: new value {new_value}",
         f"SHOT {shot}",

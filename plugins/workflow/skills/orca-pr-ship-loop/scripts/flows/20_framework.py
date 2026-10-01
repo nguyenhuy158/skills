@@ -121,7 +121,8 @@ def step_fw_save(st):
     check(expires == plan["expiration_iso"], f"expiration date {expires or 'NULL'}, expected {plan['expiration_iso']}")
     check(template == "t", "the agreement is not a template (framework) agreement")
     st["ids"].update(framework=int(record), framework_name=name)
-    shot = _shot(st, "framework-created")
+    check(_stage_ui() == plan["labels"]["agreement"].get("new", "NEW"), f"statusbar shows {_stage_ui()!r}, expected NEW")
+    shot = _shot(st, "framework-created", must_show=(name, plan["type_name"], plan["partner_name"], plan["bank_acc"]))
     return [
         f"DB  agreement {name} id={record} stage=new type={plan['type_name']} origin={origin or '-'}"
         f" partner={plan['partner_name']} contact={plan['contact_name']} bank={plan['bank_acc']}",

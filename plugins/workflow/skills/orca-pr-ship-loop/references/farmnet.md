@@ -145,11 +145,18 @@ replaces the earlier one (a `KINDS` in `80_collection_notice.py` once broke `deb
 constants (`NOTICE_KINDS`, `DO_CONFIRMER`).
 
 Whole suite without an agent (regression check, benchmark): `flow-step suite <root-dir> base=… db=…` runs the default
-variants (every flow except `so`, which needs `"so customer=… vendor=… product=… qty=… price=…"` passed as an extra
-variant) back to back as a supervised process (`hub start`), one `PASS|FAIL` line per variant, then
-`SUITE DONE x/y` (exit 0 only when all passed; ~8 min). Watch it live in an Orca terminal:
+variants (every flow except `so`, which needs `"so customer=… vendor=… product=… qty=… price=…"`) as a supervised
+process (`hub start`) in **4 parallel lanes** (`DEFAULT_LANES` in `flow-suite.py`; a lane keeps dependent variants
+and variants that may pick the same records together: agreements · debt/DR/offset · return/PR · notices), one
+`PASS|FAIL` line per variant, then `SUITE DONE x/y` (exit 0 only when all passed; ~6 min parallel vs ~12 min one by
+one). Variants given on the command line run one after the other. Watch it live in an Orca terminal:
 `orca terminal create --title "Flow progress" --command "flow-step progress <root-dir>"`. A suite answers "does the
 code still work"; screenshots are only judged by a `flow-runner` agent run.
+
+Every run opens its tab in its **own browser context** (`Target.createBrowserContext`, disposed at the end), so its
+Odoo session and `switch_user` never leak into another run. Every `_shot` is a DOM gate: it fails the step when an
+error/warning dialog is open, and create steps pass `must_show=(record name, partner, key values…)` which must be in
+the page text or a visible input value before the screenshot is taken.
 
 Blind tests of `flow-runner` (2026-09-30, bug planted in the worktree, runner given only the skill): a silent
 server-side bug (TO CHECK doing nothing) was caught at once, by the step's DB check. A UI-only change was **not**:
@@ -199,8 +206,8 @@ Script time per flow (2026-09-30, all 10 in a row ≈ 8 min, after `switch_user`
 before that change: 179–206 s / 21 turns / $0.14–0.16 (Opus by hand with the helpers: 367 s / 40 turns / $1.40).
 `init` on an existing run dir resumes it at the next step (refuses a stopped, interrupted or finished run): when
 `flow-runner` dies on a provider error between steps (seen once: Haiku emitted a 760-char tool name → Anthropic 400),
-dispatch a new `flow-runner` with the same commands. Never run two flows on the same host at once: tabs share the Odoo
-session cookie and `switch_user` in one run changes the user of the other.
+dispatch a new `flow-runner` with the same commands. Runs on one host may go in parallel (own browser context each),
+but never point two runs at the same record (same flow + same data pick): the second one finds it already moved.
 
 ### Recipe: customer → SO with vendor → confirm → agreement approved (manual; what flow `so` does)
 
@@ -249,7 +256,7 @@ SQL (what is stored) — see step 6.
 
 Both OEM scripts now run the full approval chain (shared `scripts/oem_e2e_approval.py`, needs env `DB=<wt db>` and
 `login_as_any_user` installed): fill the agreement (type Đơn hàng mua/bán, contact, bank, framework HĐNT, expiration),
-CONFIRM the order (PO `action_confirm_oem`, SO `action_confirm`) → agreement To Check, partner Credit Ops TO REVIEW,
+CONFIRM the order (PO `action_confirm_oem`, SO `action_confirm`) → agreement To Check, project AM TO REVIEW (`action_account_manager_to_review`),
 then each waiting approver APPROVE via `switch_user` (OM in To Review → CEO in Exception) → Approved, checked in UI + DB.
 Every optional field is attempted; the log prints `filled:` / `not editable here:`. Customer Reference must be unique
 and Vendor Reference must keep its prefix. Verified 2026-09-30: projects 40 (Trading), 41 (QT2), 42 (QT1), ~7.5 min.
