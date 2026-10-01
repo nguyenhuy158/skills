@@ -438,6 +438,10 @@ Merging is strictly a human decision.
      4. Verify `gh pr view <N> --json body`: one `user-attachments/assets/` URL per PNG and **no leftover
         `./…png`** (a leftover = path spelling mismatch → fix and rerun). Videos (`.mp4`/`.mov`) work the same
         and render as players.
+     5. Want a fixed width (`<img width>`)? `gh` only rewrites markdown `![]()`, never `<img src="./…">`: after
+        step 3, rewrite the uploaded links in the body (`![alt](URL)` → `<img width="420" alt="alt" src="URL">`)
+        and `gh pr edit <N> --body-file …` again (no `--attach`). Verified 2026-10-01 on gh 2.101: the 3-column
+        table and the widths render exactly like the old drag-and-drop body.
      **Fallback — `browser-use` drag-and-drop** (gh too old and the user does not upgrade):
      1. `BU_NAME=pr<N>-gh browser-use`: `new_tab("https://github.com/<owner>/<repo>/pull/<N>")` in the agent Chrome
         (logged in to GitHub), scroll the **new comment** box `#new_comment_field` into view.
