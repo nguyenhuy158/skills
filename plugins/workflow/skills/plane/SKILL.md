@@ -23,15 +23,29 @@ A task is never created with any of these missing.
 
 | Field | Rule |
 |---|---|
-| Title | `[Domain] Mô tả` — Domain is the primary label in Title Case (`DEBT` → `[Debt]`). Short, no ids or dates |
+| Title | `[CODE] Mô tả` — CODE is the 2–4 letter code of the primary label (table below), uppercase A–Z only, e.g. `[SO] Luồng phê duyệt ngoại lệ…`. Short, no ids or dates |
 | Language | By reader: task for BA/Ops (business flow, OPS label) → Vietnamese; dev-only (refactor, CI, infra) → English. Comments follow the task's language |
-| Labels | ≥1 domain label; the first one is the title prefix. Nothing fits → ask to create a label, never invent a prefix |
+| Labels | ≥1 domain label; the first one gives the title code. Nothing fits → ask to create a label (and its code), never invent a prefix |
 | Module | Best-fitting module; unclear → `Uncategorized` (reclassify later) |
 | Priority | Never `none`. urgent: prod broken or ops blocked now · high: wrong money/data or a dated commitment · medium: normal · low: nice-to-have |
 | Assignee | `member me` unless the user names someone (`member list_workspace display_name=…`) |
 | Start + Due | Working days only (no Sat/Sun, no VN public holiday). The timeline lives here only, never in the description |
 | State | `Todo` on creation; `In Progress` if work starts right now |
 | Description | One context line + checklist (templates below) |
+
+### Title codes
+
+Labels keep their full names; only the title prefix is short: 2–4 uppercase letters A–Z, no digits, no lowercase.
+
+| Label | Code | Label | Code | Label | Code |
+|---|---|---|---|---|---|
+| SO | SO | DISBURSEMENT | DR | DEBT | DEBT |
+| PR (payment request) | PR | REPAYMENT | RPMT | INVOICE | INV |
+| APPENDIX | PL | TREASURY | TRS | FORM | FORM |
+| SYNC | SYNC | DATA | DATA | PLANNING | PLAN |
+| OEM | OEM | OPS | OPS | INFRA | INFR |
+| OBSERVABILITY | OBS | BANK | BANK | CREDIT | CRED |
+| CUSTOMER | CUST | | | | |
 
 ## Create
 
@@ -56,7 +70,7 @@ A task is never created with any of these missing.
 Every reply that creates, updates or reports on tasks ends with one block per task, in this exact shape:
 
 ```text
-[DICHVUFARM-125](<PLANE_BASE_URL>/<slug>/browse/DICHVUFARM-125/) — [Debt] Title of the task
+[DICHVUFARM-125](<PLANE_BASE_URL>/<slug>/browse/DICHVUFARM-125/) — [DEBT] Title of the task
 Mô tả: one short line — what the task is about / what changed now
 Timeline: 2026-10-05 → 2026-10-07 · còn 3 ngày làm việc
 ```
