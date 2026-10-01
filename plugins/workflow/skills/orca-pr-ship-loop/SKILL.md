@@ -422,8 +422,9 @@ Merging is strictly a human decision.
    - Keep box chars aligned (monospace); wrap the chart in a fenced code block.
    - **UI task → attach the step 2.2 screenshots as GitHub user-attachments.**
      **Default — `gh pr edit --attach` (gh ≥ 2.99, no browser, no GitHub login):**
-     1. Check: `gh pr edit --help | grep -q -- --attach` — missing → ask the user to `brew upgrade gh`, or use the
-        browser fallback below.
+    1. Check: `gh pr edit --help | grep -q -- --attach` — missing → gh is too old: on this machine gh comes from
+       **mise** (`~/.config/mise/config.toml`, `gh = "2.101"` since 2026-10-01; `mise install gh`, then a new shell),
+       elsewhere `brew upgrade gh`. Ask before upgrading; otherwise use the browser fallback below.
      2. In the body file, reference every PNG as a **relative markdown image spelled exactly like its `--attach`
         path**, inside the `📸 Screenshots` table: `| ① caption | ![desktop](./03-confirm.png) | ![mobile](./03-confirm-mobile.png) |`
         (markdown `![]()` only — `<img src="./…">` is not rewritten).
