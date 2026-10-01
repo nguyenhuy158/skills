@@ -1,5 +1,5 @@
 ---
-name: plane-task-flow
+name: plane
 description: Chuẩn hóa mọi thao tác với Plane cho DichvuFarmNet (DICHVUFARM) và FarmLink (FARMLINK) — tạo task bắt buộc có timeline start/due tính theo ngày làm việc (bỏ T7, CN và ngày lễ VN), title `[Domain] Mô tả`, label, module (chưa rõ thì Uncategorized), priority, assignee, description dạng checklist; ghi mọi tiến độ bằng comment; gắn link PR; gắn relation qua browser-use; chuyển state Todo → In Progress → Done. Dùng skill này bất cứ khi nào người dùng nói "tạo task", "tạo plane task", "lưu vào plane", "note lại vào plane", "cập nhật task", "gắn relation", "chuyển done", nhắc tới mã DICHVUFARM-/FARMLINK-, hoặc vừa xong một PR/hotfix cần ghi nhận trên Plane — kể cả khi không gọi tên skill.
 ---
 
