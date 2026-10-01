@@ -420,21 +420,35 @@ Merging is strictly a human decision.
      `✨ What` (≤ 4 bullets) · `🛡️ Safety` (only if relevant) · `🧪 Tests` (result, or "skipped by user")
      · `🔍 How to check` (≤ 3 steps).
    - Keep box chars aligned (monospace); wrap the chart in a fenced code block.
-   - **UI task → attach the step 2.2 screenshots as GitHub user-attachments**, using the `browser-use` CLI only:
-     1. Write the body text first with `gh pr edit <N> --body-file <scratchpad>/pr-body.md`.
-     2. `BU_NAME=pr<N>-gh browser-use`: `new_tab("https://github.com/<owner>/<repo>/pull/<N>")` in the agent Chrome
+   - **UI task → attach the step 2.2 screenshots as GitHub user-attachments.**
+     **Default — `gh pr edit --attach` (gh ≥ 2.99, no browser, no GitHub login):**
+     1. Check: `gh pr edit --help | grep -q -- --attach` — missing → ask the user to `brew upgrade gh`, or use the
+        browser fallback below.
+     2. In the body file, reference every PNG as a **relative markdown image spelled exactly like its `--attach`
+        path**, inside the `📸 Screenshots` table: `| ① caption | ![desktop](./03-confirm.png) | ![mobile](./03-confirm-mobile.png) |`
+        (markdown `![]()` only — `<img src="./…">` is not rewritten).
+     3. Run from the screenshot dir so the paths match, ≤ 50 files per call:
+        ```bash
+        cd ${TMPDIR:-/tmp}/pr-shots/<branch-slug>
+        A=(); for f in *.png; do A+=(--attach "./$f"); done
+        gh pr edit <N> --body-file <scratchpad>/pr-body.md "${A[@]}"
+        ```
+        gh uploads each file and rewrites its `./file.png` reference to the `user-attachments/assets/` URL.
+        Partial failure: the PR keeps the uploads that worked and gh exits non-zero → rerun for the rest.
+     4. Verify `gh pr view <N> --json body`: one `user-attachments/assets/` URL per PNG and **no leftover
+        `./…png`** (a leftover = path spelling mismatch → fix and rerun). Videos (`.mp4`/`.mov`) work the same
+        and render as players.
+     **Fallback — `browser-use` drag-and-drop** (gh too old and the user does not upgrade):
+     1. `BU_NAME=pr<N>-gh browser-use`: `new_tab("https://github.com/<owner>/<repo>/pull/<N>")` in the agent Chrome
         (logged in to GitHub), scroll the **new comment** box `#new_comment_field` into view.
-     3. Upload by **drag-and-drop** (the only reliable path; `setFileInputFiles` + `change` does not trigger
-        GitHub's uploader, and the `…` → Edit menu is ambiguous): for each PNG, `cdp("Input.dispatchDragEvent",
+     2. Save the box's current text (the user may have an unsent draft). For each PNG, `cdp("Input.dispatchDragEvent",
         type=…, x, y, data={"items": [], "files": [path], "dragOperationsMask": 1})` for `dragEnter`, `dragOver`,
-        `drop` at the textarea center; wait ~6 s per file.
-     4. Before the first drop, save the box's current text (the user may have an unsent draft there). After the
-        uploads, read the `https://github.com/user-attachments/assets/<uuid>` URLs from the textarea (GitHub may
-        insert `<img … src="URL">` or `![](URL)` — match both), then **restore the saved text without posting**.
-        Put the images in a 2-column `📸 Screenshots` table with captions in the body file.
-     5. `gh pr edit <N> --body-file …`; verify with `gh pr view <N> --json body` that every URL is present.
-   - Never host images elsewhere (no gist, no repo commit, no external upload). Not logged in to GitHub, upload
-     stuck, or `browser-use` failing → stop and ask the user; keep the text body and say screenshots are pending.
+        `drop` at the textarea center; wait ~6 s per file (`setFileInputFiles` + `change` does not trigger the uploader).
+     3. Read the `https://github.com/user-attachments/assets/<uuid>` URLs from the textarea (`<img … src="URL">` or
+        `![](URL)` — match both), **restore the saved text without posting**, put the URLs in the body file,
+        `gh pr edit <N> --body-file …`, verify with `gh pr view <N> --json body`.
+   - Never host images elsewhere (no gist, no repo commit, no external upload). Upload blocked → stop and ask the
+     user; keep the text body and say screenshots are pending.
    - Show the user the new body.
 2. **Mark Ready for Review** — only when ALL are true: code final, step 2.2 UI verified with screenshots,
    7.1 description applied, CI green, reply scan (5.5) clean:
