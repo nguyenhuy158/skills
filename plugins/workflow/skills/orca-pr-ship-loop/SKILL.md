@@ -271,14 +271,16 @@ If Docker dies later (`docker.sock: no such file`), restart it and rerun only th
      (`hub start name=pr<N>-ready application=sh args=["-c", "until curl -sf <url>/web/login >/dev/null; do sleep 3;
      done; echo READY"]`) and continue; on its notice check the installed module version: already current → skip
      the upgrade; still old → run it (`make upgrade` as a supervised process too).
-3. **Isolated Tests — user decides**:
-   - Before running, **ask the user** (yes/no): "Run the isolated tests (~<N> min), or ship fast without them?"
+3. **Two test tiers — the gate always runs, isolated tests are the user's call**:
+   - **Gate** (2.1, never skipped): lint/format/static checks (FarmNet: `ruff check`, `ruff format --check`, `xmllint`).
+   - **Isolated tests** — before running, **ask the user** (yes/no): "Run the isolated tests (~<N> min), or ship
+     fast without them?"
      - **Yes** → run the project's isolated test target for every touched module
        (FarmNet: `make test-fresh MODULE=<m>`). Read the summary line from the log, not the exit code alone
        (FarmNet: `0 failed, 0 error(s) of N tests`). A `setUpClass` error hides every test of that class:
        fix fixtures first, rerun.
-     - **No (ship fast)** → skip, and write "tests skipped by user" in the status line, the PR body
-       and the step 7 merge-gate summary. CI still runs.
+     - **No (ship fast)** → skip only these, and write "isolated tests skipped by user" in the status line, the
+       PR body and the step 7 merge-gate summary. The gate and CI still run.
    - Ask once per PR; reuse the answer for later fix commits unless the user changes it.
 4. **Self-Review Before Push** (catches what bots flag later):
    - **Override chain**: for every overridden method, `rg "def <method>"` across all modules. Any override that
@@ -330,6 +332,7 @@ Never freeze the main session with sleep loops: one supervised watcher per phase
    ```bash
    orca terminal create --worktree active --title "PR-Watcher" --command "gh pr checks <N> --watch" --json
    ```
+   Keep the terminal handle from its JSON output: teardown closes **only** the terminals the loop opened.
 2. **Agent's watcher** — start right after the PR opens, and again after every push:
    ```text
    hub start name=pr<N>-ci application=bash cwd=<worktree> pty=false
@@ -425,8 +428,10 @@ Merging is strictly a human decision.
         GitHub's uploader, and the `…` → Edit menu is ambiguous): for each PNG, `cdp("Input.dispatchDragEvent",
         type=…, x, y, data={"items": [], "files": [path], "dragOperationsMask": 1})` for `dragEnter`, `dragOver`,
         `drop` at the textarea center; wait ~6 s per file.
-     4. Read the `https://github.com/user-attachments/assets/<uuid>` URLs from the textarea, then **clear it
-        without posting**. Put the images in a 2-column `📸 Screenshots` table with captions in the body file.
+     4. Before the first drop, save the box's current text (the user may have an unsent draft there). After the
+        uploads, read the `https://github.com/user-attachments/assets/<uuid>` URLs from the textarea (GitHub may
+        insert `<img … src="URL">` or `![](URL)` — match both), then **restore the saved text without posting**.
+        Put the images in a 2-column `📸 Screenshots` table with captions in the body file.
      5. `gh pr edit <N> --body-file …`; verify with `gh pr view <N> --json body` that every URL is present.
    - Never host images elsewhere (no gist, no repo commit, no external upload). Not logged in to GitHub, upload
      stuck, or `browser-use` failing → stop and ask the user; keep the text body and say screenshots are pending.
@@ -464,10 +469,13 @@ Once user confirms PR is merged:
    Same id (and same `--name-only` list) → nothing lost. Different → diff the two patches and report.
 2. **Project Teardown**:
    - Run project-specific destroy commands (e.g. `make wt-destroy` to drop cloned DB/filestore).
-3. **Clean Orca Terminals (Kill PTYs)**:
+3. **Close the Orca terminals the loop opened** (never `--all`: it also kills the user's own terminals in that
+   worktree):
    ```bash
-   orca terminal close --worktree active --all --json
+   orca terminal close --terminal <handle> --json      # each handle saved in step 4.1 / when the loop opened it
    ```
+   `orca worktree rm` (8.4) still ends every remaining terminal of the worktree: list them for the user
+   (`orca terminal list --worktree active --json`) and remove only after they confirm.
 4. **Remove Git Worktree & Orca Card**:
    ```bash
    orca worktree rm --worktree active --force --json
