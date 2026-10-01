@@ -139,6 +139,7 @@ Skills available after install:
 | `/workflow:retro` | Distil session lessons into hindsight memory, deduping against what is already stored |
 | `/workflow:pr-ship-loop` | Ship a change end-to-end: worktree, gate, PR, bot reviews, CI watch, cleanup |
 | `/workflow:orca-pr-ship-loop` | Full PR shipping cockpit via Orca CLI: cards, embedded browser, watcher terminal, cleanup |
+| `/workflow:plane-task-flow` | Plane tasks for FarmNet/FarmLink: working-day timeline, `[Domain]` title, checklist description, comments, PR links, relations |
 
 ### Update
 

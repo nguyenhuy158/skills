@@ -1,0 +1,22 @@
+# Vietnam public holidays that fall on a weekday (Sat/Sun are skipped anyway).
+# One date per line: YYYY-MM-DD <note>. Lines starting with # are ignored.
+# Update every year once the Ministry of Home Affairs (Bộ Nội vụ) publishes the schedule;
+# workdays.py warns when a year in the timeline has no entry here.
+# Last checked 2026-10-01: vnexpress.net/du-kien-cac-ngay-nghi-le-tet-nam-2027-5105651.html,
+# thanhnien.vn/trinh-lich-nghi-tet-nguyen-dan-2027-keo-dai-7-ngay-18526091115120642.htm,
+# luatvietnam.vn (Ngày Văn hóa Việt Nam 2026).
+
+2026-11-24 Ngày Văn hóa Việt Nam (official, paid holiday from 2026)
+
+2027-01-01 Tết Dương lịch
+2027-02-04 Tết Nguyên đán - 28 Tháng Chạp (proposed, pending PM decision)
+2027-02-05 Tết Nguyên đán - 29 Tháng Chạp (proposed, pending PM decision)
+2027-02-08 Tết Nguyên đán - Mùng 3 (proposed, pending PM decision)
+2027-02-09 Tết Nguyên đán - nghỉ bù (proposed, pending PM decision)
+2027-02-10 Tết Nguyên đán - nghỉ bù (proposed, pending PM decision)
+2027-04-16 Giỗ Tổ Hùng Vương (10/3 Âm lịch)
+2027-04-30 Ngày Giải phóng miền Nam
+2027-05-03 Quốc tế Lao động - nghỉ bù cho 01/05 (Saturday)
+2027-09-02 Quốc khánh
+2027-09-03 Quốc khánh - ngày liền kề (proposed, pending PM decision)
+2027-11-24 Ngày Văn hóa Việt Nam
