@@ -7,6 +7,7 @@
 #   flow-step suite <root-dir> base=<url> db=<db> ["<flow> k=v" ...]     run variants back to back, no agent
 #                                                                         (none given = the default suite)
 #   flow-step progress <root-dir>                                         live per-run view (Ctrl-C to quit)
+#   flow-step cost <agent-name> [...]                                     tokens + $ of flow-runner agent runs
 # Step output: STEP … OK/FAILED, DB/UI lines, SHOT <png> + EXPECT lines, then NEXT <step> or FLOW DONE.
 # Exit 0 = step ok · exit 1 = flow stopped (never continue after that) · exit 2 = wrong <step>, nothing was run.
 set -u
@@ -32,6 +33,11 @@ fi
 
 if [ "${1:-}" = progress ]; then
   exec python3 "$(dirname "$SELF")/flow-progress.py" "${2:?usage: flow-step progress <root-dir>}"
+fi
+
+if [ "${1:-}" = cost ]; then
+  shift
+  exec python3 "$(dirname "$SELF")/flow-cost.py" "$@"
 fi
 
 if [ "${1:-}" = init ]; then

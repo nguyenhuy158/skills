@@ -200,6 +200,14 @@ rtk proxy <skill-dir>/scripts/flow-step <run-dir> <step>   # <step> = the last N
 A wrong `<step>` exits 2 without running anything (it also keeps consecutive calls distinct for tool-loop guards).
 Never pipe `flow-step` into `head`/`tail`: the closed pipe kills the step mid-way and the run is marked failed.
 
+**Every e2e report MUST end with its cost.** After a `flow-runner` agent yields, run
+`flow-step cost <agent-name> [...]` (sums the per-turn `usage` of `~/.omp/agent/sessions/**/<agent-name>.jsonl`) and
+paste its `COST …` line(s): `$` total · model turns · model · tokens in / out / cache read / cache write. Agent-free
+runs (`flow-step suite`, steps run by hand) cost **$0** LLM — say so, with the wall time from `SUITE DONE`. Report
+format: `💰 <flow>: $0.0995 · 10 turns · haiku-4-5 · 259,548 tokens (cache read 225,241) · 74 s`.
+Measured 2026-10-01 (`disbursement`, Haiku): $0.07–0.10 / 7–10 turns per flow; a runner that pastes image data
+into its output instead of the PNG path costs ~3× ($0.32) — the `png` field must be the path.
+
 Script time per flow (2026-09-30, all 10 in a row ≈ 8 min, after `switch_user` moved to the JSON routes): `so` 103 s,
 `framework` 55–63 s, `appendix` 45 s, `debt` 66 s, `return` 50 s, `payment_request` 15 s, `disbursement` 28–29 s,
 `debt_offset` 41 s. With `flow-runner` add ~1–1.5 min of Haiku turns + screenshot reads per flow; measured on `so`

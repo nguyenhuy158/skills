@@ -262,6 +262,9 @@ If Docker dies later (`docker.sock: no such file`), restart it and rerun only th
      what the user sees (stage badge, buttons, field values, dialogs, layout), then query the same record in the
      worktree DB (state/stage, ids, links, amounts). Pass only when both agree; a mismatch is a finding to report.
      Record both in the 7.1 captions (e.g. `③ Approved badge · DB stage=reviewed`).
+   - **Report the cost of every e2e run**: scripted FarmNet flows go through `scripts/flow-step` (agent-free suite =
+     $0 LLM) or the `flow-runner` agent; after an agent run, `scripts/flow-step cost <agent-name>` prints `$` + tokens
+     (in / out / cache) + turns — paste that line in the report (format in `references/farmnet.md`).
    - Blocked (no DB/stack/browser)? Say so in the status line and keep step 2.2 open; never report the UI as verified.
    - **Before any manual module upgrade, read the app log first.** Dev containers may already be upgrading the
      changed modules on start; a parallel upgrade deadlocks. Still loading → start a readiness watcher
