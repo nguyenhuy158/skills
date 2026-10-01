@@ -3,6 +3,7 @@
 
     workdays.py plan <hotfix|bug|small|large|N> [--start YYYY-MM-DD]
     workdays.py check <start YYYY-MM-DD> <due YYYY-MM-DD>
+    workdays.py left <due YYYY-MM-DD>
 
 The start day counts as day 1. Holidays come from ../references/vn-holidays.txt.
 """
@@ -104,6 +105,14 @@ def check(args):
     report(args.start, args.due)
 
 
+def left(args):
+    today = dt.date.today()
+    if args.due >= today:
+        print(f"còn {count_workdays(today, args.due)} ngày làm việc")
+        return
+    print(f"quá hạn {count_workdays(args.due + ONE_DAY, today)} ngày làm việc")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     commands = parser.add_subparsers(dest="command", required=True)
@@ -115,6 +124,9 @@ def main():
     check_parser.add_argument("start", type=dt.date.fromisoformat)
     check_parser.add_argument("due", type=dt.date.fromisoformat)
     check_parser.set_defaults(handler=check)
+    left_parser = commands.add_parser("left", help="working days from today to the due date")
+    left_parser.add_argument("due", type=dt.date.fromisoformat)
+    left_parser.set_defaults(handler=left)
     args = parser.parse_args()
     args.handler(args)
 

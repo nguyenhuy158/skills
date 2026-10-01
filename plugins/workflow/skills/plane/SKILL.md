@@ -49,7 +49,22 @@ A task is never created with any of these missing.
 3. `workitem create` with name, description_html, state, priority, assignees, labels, start_date, target_date (and `parent`).
 4. `module manage_workitems module_id=… add_ids=<new id>` — module is not a create field.
 5. Related tasks → `references/relations.md`.
-6. Reply with identifier, URL, timeline and every field that was defaulted.
+6. Reply in the output format below, then list every field that was defaulted.
+
+## Output
+
+Every reply that creates, updates or reports on tasks ends with one block per task, in this exact shape:
+
+```text
+[DICHVUFARM-125](<PLANE_BASE_URL>/<slug>/browse/DICHVUFARM-125/) — [Debt] Title of the task
+Mô tả: one short line — what the task is about / what changed now
+Timeline: 2026-10-05 → 2026-10-07 · còn 3 ngày làm việc
+```
+
+- Link text is the identifier (`DICHVUFARM-125`, `FARMLINK-12`), the URL is the task's web URL, then the title.
+- Days left: `workdays.py left DUE` (working days from today to due, today included). Overdue → `quá hạn N ngày làm việc`;
+  task already Done → `đã xong`.
+- Several tasks → one block each, same order as handled.
 
 ## Description: checklist only
 
