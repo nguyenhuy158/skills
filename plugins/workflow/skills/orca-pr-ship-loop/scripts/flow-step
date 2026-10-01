@@ -1,0 +1,74 @@
+#!/bin/bash
+# Step runner for the scripted FarmNet UI flows in ./flows (one file per flow, 00_core.py = shared engine).
+#   flow-step flows                                                       list flows and their params
+#   flow-step init <run-dir> flow=<name> base=<url> db=<worktree-db> ...  plan a run (same run dir again = resume)
+#   flow-step <run-dir> <step>                                            run the next step (< 30 s); <step> must be
+#                                                                         the NEXT name printed last time
+#   flow-step suite <root-dir> base=<url> db=<db> ["<flow> k=v" ...]     run variants back to back, no agent
+#                                                                         (none given = the default suite)
+#   flow-step progress <root-dir>                                         live per-run view (Ctrl-C to quit)
+# Step output: STEP … OK/FAILED, DB/UI lines, SHOT <png> + EXPECT lines, then NEXT <step> or FLOW DONE.
+# Exit 0 = step ok · exit 1 = flow stopped (never continue after that) · exit 2 = wrong <step>, nothing was run.
+set -u
+SELF=$(readlink -f "$0")
+export FLOW_DIR="$(dirname "$SELF")/flows"
+
+if [ "${1:-}" = flows ]; then
+  exec python3 - <<'PY'
+import glob, os
+for _path in sorted(glob.glob(os.path.join(os.environ["FLOW_DIR"], "*.py"))):
+    exec(compile(open(_path).read(), _path, "exec"))
+for name, flow in FLOWS.items():
+    print(f"{name}: {flow['describe']}")
+    print(f"    params: {flow['params']}")
+    print(f"    steps: {' > '.join(step for step, _ in flow['steps'])}")
+PY
+fi
+
+if [ "${1:-}" = suite ]; then
+  shift
+  exec python3 "$(dirname "$SELF")/flow-suite.py" "$@"
+fi
+
+if [ "${1:-}" = progress ]; then
+  exec python3 "$(dirname "$SELF")/flow-progress.py" "${2:?usage: flow-step progress <root-dir>}"
+fi
+
+if [ "${1:-}" = init ]; then
+  RUN=${2:?usage: flow-step init <run-dir> flow=<name> base=<url> db=<db> ...}
+  shift 2
+  exec python3 - "$RUN" "$@" <<'PY'
+import glob, os, sys
+for _path in sorted(glob.glob(os.path.join(os.environ["FLOW_DIR"], "*.py"))):
+    exec(compile(open(_path).read(), _path, "exec"))
+try:
+    init(sys.argv[1], sys.argv[2:])
+except StepFailed as exc:
+    print(f"INIT FAILED: {exc}")
+    sys.exit(1)
+PY
+fi
+
+RUN=${1:?usage: flow-step <run-dir> <step>}
+STATE="$RUN/state.json"
+[ -f "$STATE" ] || { echo "no $STATE — run flow-step init first"; exit 1; }
+NEXT=$(python3 -c 'import json, sys; print(json.load(open(sys.argv[1])).get("next") or "")' "$STATE")
+if [ -n "${2:-}" ] && [ "$2" != "$NEXT" ]; then
+  echo "WRONG STEP: asked for $2, the next step is ${NEXT:-none}; nothing was run."
+  exit 2
+fi
+NAME="flow-$(basename "$RUN" | tr -c 'A-Za-z0-9_-' '-' | cut -c1-40)"
+
+FLOW_STATE="$STATE" BU_NAME="$NAME" timeout 28 browser-use <<'PY'
+import glob, os
+for _path in sorted(glob.glob(os.path.join(os.environ["FLOW_DIR"], "*.py"))):
+    exec(compile(open(_path).read(), _path, "exec"))
+run_step(os.environ["FLOW_STATE"])
+PY
+[ $? -eq 124 ] && echo "STEP TIMED OUT (28 s) — FLOW STOPPED, do not continue; report this failure."
+
+python3 - "$STATE" <<'PY'
+import json, sys
+st = json.load(open(sys.argv[1]))
+sys.exit(0 if (st.get("last") or {}).get("ok") and not st.get("failed") and not st.get("running") else 1)
+PY

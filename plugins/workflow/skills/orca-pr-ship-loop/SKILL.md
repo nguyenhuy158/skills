@@ -19,8 +19,8 @@ task → environment pre-flight (Docker, gh, Orca)
      → UI/data task? clone worktree DB from root (fresh ≤ 2 days, else ASK user: use stale / sync root)
      → implement + local gate + tests (ASK user: run / ship fast) + self-review + UI check (browser-use CLI only)
      → visual diff inspection (Orca editor) → commit, push, DRAFT PR
-     → dedicated watcher terminal (CI polling) + live card updates ('CI: 3/5 passing')
-     → watch CI until 100% green
+     → background watcher (hub process) + live card updates ('CI: 3/5 passing'); main keeps working
+     → watcher exits when CI is 100% green (or names the failed checks)
      → PR description (little text + ASCII chart + screenshots) → `gh pr ready` (bots + humans review)
      → triage EVERY comment (fix or decline) → reply on PR → reply-coverage scan X/X → push ──┐
      ↑                                                        new comments or CI failure    │
@@ -58,40 +58,50 @@ step 8 has torn the stack down.
 (`Step 1.3 — checking root DB freshness`, `Step 2.2 — Orca browser smoke test`, `Step 5.1 — triage table`).
 Never run a command without its step number; never report "step 2" when the work is 2.3.
 
-### Execution: background jobs, not subagents
+### Execution: watchers run in the background — never polls, never subagents
 
-This skill runs commands, not open-ended research. Every command expected to take **more than 10 s**
-runs as a **background job** (`bash` with `async: true`): DB clone, `make test-fresh`, `gh pr checks --watch`,
-`wt-up`, builds. Wait on the job id; read its output; continue.
+This skill runs commands, not open-ended research. Keep the main session clean and free for the next step:
 
-- **Timeout: every background job gets `timeout ≤ 30` s.** Set it explicitly on the call.
-- **Needs longer than 30 s?** (test suites, DB clone, image build, CI watch) → **ask the user first**:
-  state the command, the expected duration, and why; run with the longer timeout only after a yes.
-  One yes covers the same command for the rest of the PR (e.g. every rerun of `make test-fresh`).
-- A job killed by the 30 s timeout is not a failure of the code: report it and ask whether to rerun longer.
-- **Two timed-out waits on the same job = stop.** After the second `wait` that returns
-  "still running", never issue a third. Read its output (`hub logs`), check the underlying
-  system directly (deploy API, `docker ps`, `curl` the URL, `gh run view`), and report to the
-  user: how long it has run, what the logs say, what the direct check says, and 2–3 options
-  (keep waiting N minutes / kill and retry / investigate X). Waiting in a loop hides a job that
-  finished its work but never exits, and burns the turn.
-- A supervised process that already printed its success markers (e.g. `deploy:done`, `http:200`)
-  is done: read the markers, kill it, move on — do not wait for the process to exit.
+- **≤ 10 s** → foreground.
+- **10–30 s one-shots** (`git push`, `gh pr create`, `make wt-proxy`) → `bash` with `async: true`, `timeout ≤ 30`.
+- **Anything that waits, or may exceed 30 s** — CI / review-bot watch, DB clone, `make wt-up`, `make upgrade`,
+  `make test-fresh`, readiness (`curl` until HTTP 200) → a **supervised process**, not a bash job (bash jobs are
+  hard-capped at 30 s):
+  `hub start name=pr<N>-<purpose> application=… args=[…] cwd=<worktree> pty=false` (before the PR exists, use
+  the branch slug instead of `pr<N>`). Start it, then go straight to the next step that does not depend on it.
+- **Never `sleep` + poll, never repeated `hub wait`.** The harness injects
+  `Supervised process <name> exited with exit code <n>` when it ends — that notice resumes the loop. Read the exit
+  code first (0 = done/green), then only the tail: `hub logs name=<name> lines=15` (or `grep: "RESULT|Error"`).
+  Nothing independent left to do → end the reply with the status line naming the running watchers
+  (`step 6.1/9 — pr<N>-ci watching`); the notice wakes the loop, no babysitting.
+- **CI + review bots → always `scripts/pr-watch.sh`** (step 4.2): one line per state change, updates the Orca card
+  itself, ends with one `RESULT:` line (exit 0 green · 1 failed · 2 timeout) plus a `COMMENTS:` count.
+- **Stuck detection** replaces waiting in a loop: `RESULT: TIMEOUT`, or a clone / wt-up / upgrade running
+  > 10 min → check the system directly (`gh api repos/{owner}/{repo}/commits/<sha>/status`, `docker ps`, `curl`),
+  then report run time, log tail, direct check and 2–3 options (wait N min / `hub stop` + retry / investigate X).
+- A supervised process that already printed its success markers (e.g. `deploy:done`, `http:200`) is done:
+  read the markers, `hub stop` it, move on.
+- Long runs that are part of the plan the user approved (clone, wt-up, CI/bot watch) need no extra question;
+  the decision gates (1.3 stale DB, 2.3 run tests, 7 merge) are still questions.
 - **Do not spawn subagents** (`task` tool) for any step of this loop. Subagents start blind, cannot see
   the conversation or the user's decisions at gates 1.3 / 2.3 / 7, and make the loop position unclear.
-- Short commands (≤ 10 s) run in the foreground.
-- The Orca `PR-Watcher` terminal (step 4.1) is for the user to watch; the agent still reads CI through `gh`.
+- The Orca `PR-Watcher` terminal (step 4.1) is for the user's eyes; the agent reads its own hub watcher.
 
 ### Browser: `browser-use` CLI in every step
 
 Any step that needs a browser (UI test, login, user switch, GitHub attachment upload, reading a page) uses the
-**`browser-use` CLI only** — never the Orca embedded browser, the harness `browser` object, Playwright/Puppeteer,
-or another app. `browser-use` broken → ask the user to check it; never fall back.
+**`browser-use` CLI only** — never agent-browser, the Orca embedded browser, the harness `browser` object,
+Playwright/Puppeteer, or another app (a pre-tool hook blocks them). `browser-use` broken → ask the user; never fall back.
 
-**Never steal the user's focus**: do not call `activate_tab()` (CDP `Target.activateTarget`) or `headed`/foreground
-helpers. They pull Chrome to the front on every call while the user works in other apps. Pick the tab with
-`switch_tab(<targetId>)` only; `capture_screenshot`, `js`, `cdp` and drag-drop upload all work on a background tab.
-Set the viewport (`Emulation.setDeviceMetricsOverride`) inside every call: a shared Chrome may reset it between calls.
+It drives the shared **headless agent Chrome** (CDP `http://127.0.0.1:9223`, profile `~/.chrome-agent`, launchd job
+`local.agent-chrome`), already logged in to GitHub/Plane/Odoo envs. Headless = it can never steal the user's focus.
+- **Every call names this PR's own session**: `BU_NAME=pr<N>-<purpose> browser-use <<'PY' ... PY` (unique per
+  agent; never `agent`/`default` — the hook blocks unnamed calls).
+- `new_tab(url)` opens the tab in its **own headless window** (always visible, Odoo renders) — keep its targetId and
+  reuse it with `switch_tab(<id>)`. `activate_tab` is never needed.
+- When the step is done, `close_tab()` your tab: it also stops your daemon (no orphan tabs/daemons).
+- Set the viewport (`Emulation.setDeviceMetricsOverride`) inside every call: a shared Chrome may reset it.
+- Need to look / log in by hand: ask the user to run `agent-chrome --show`, then `agent-chrome --hide`.
 
 ### Test data priority (UI/data tests)
 
@@ -102,6 +112,36 @@ Use the fastest real data first; build from scratch only as the last resort:
 3. **Create new records from scratch** only when no existing or past record can be adapted.
 
 Never touch the root/shared DB for this. Say in the status line which option was used.
+
+**Deep links use ids from the worktree DB, never prod ids.** Local/clone ids differ from prod; look the record
+up by name in the clone DB first (`select id from agreement where name = 'CP…'`). A missing id makes Odoo 16's
+legacy `BasicModel._fetchRecord` call `Promise.reject()` → misleading `'__raisedOnFormSave' of undefined` dialog.
+
+### UI error root cause — Chrome debugger via `browser-use` (every UI bug)
+
+An Odoo client error dialog (`OwlError … see "cause"`, `__raisedOnFormSave`, `Uncaught Promise`) is a symptom.
+Find the throw site **before** blaming or changing code:
+1. **Baseline**: revert the change in the worktree (`git revert --no-commit HEAD`), restart Odoo, reproduce.
+   Same error on `main` code → pre-existing; restore with `git reset --hard HEAD`.
+2. **Failing RPC?** Hook XHR (Odoo 16 RPC uses XHR, not `fetch`) with `Page.addScriptToEvaluateOnNewDocument`,
+   reload, list responses with `error`. Also check `docker logs <odoo> --since 3m | grep -A3 Traceback`
+   (ignore cron noise: gRPC `:50051`, farmlink).
+3. **No RPC error / cause is `undefined`** → pause on the throw with the Chrome debugger:
+   ```python
+   drain_events(); cdp("Debugger.enable"); cdp("Debugger.setAsyncCallStackDepth", maxDepth=32)
+   cdp("Debugger.setPauseOnExceptions", state="all")        # caught + promise rejections
+   js("setTimeout(()=>odoo.__WOWL_DEBUG__.root.env.services.action.doAction({...}).catch(()=>{}),200); 1")
+   for ev in drain_events():                                  # poll ~15 s
+       if ev.get("method") == "Debugger.paused":
+           p = ev["params"]; loc = p["callFrames"][0]["location"]
+           src = cdp("Debugger.getScriptSource", scriptId=loc["scriptId"])["scriptSource"].split("\n")
+           print(p.get("reason"), src[loc["lineNumber"]][loc["columnNumber"]-400:][:600])  # + p["asyncStackTrace"]
+           cdp("Debugger.resume")                              # ALWAYS resume, or the page hangs
+   cdp("Debugger.setPauseOnExceptions", state="none"); cdp("Debugger.disable")
+   ```
+   Filter pauses to `reason == "promiseRejection"` with `data.type == "undefined"` when the cause is empty.
+4. Report the throw site + why (file/function, the condition that triggered it) before fixing anything.
+
 
 
 ### Ask when unsure (every step)
@@ -124,8 +164,8 @@ Run before creating anything; a dead daemon mid-loop wastes whole test runs.
 1. **Docker**: `docker info --format '{{.ServerVersion}}'` — fails → start the runtime (OrbStack: `orb start`), re-check.
 2. **GitHub CLI**: `gh auth status`.
 3. **Orca CLI**: `orca --version`.
-4. **Browser (UI tasks only)**: `browser-use --doctor`. Fails → ask the user to check the `browser-use` CLI
-   before step 2.2; never switch to another browser.
+4. **Browser (UI tasks only)**: `agent-chrome` (ensures the headless agent Chrome is up) and
+   `curl -s http://127.0.0.1:9223/json/version`. Fails → ask the user; never switch to another browser.
 
 If Docker dies later (`docker.sock: no such file`), restart it and rerun only the failed sub-step.
 
@@ -173,13 +213,13 @@ If Docker dies later (`docker.sock: no such file`), restart it and rerun only th
      (read `skill://browser-use` first). **No other browser tool**: not the Orca embedded browser,
      not the harness `browser` object, not Playwright/Puppeteer, not screenshots of another app.
      ```bash
-     browser-use <<'PY'
-     new_tab("http://<worktree-slug>.localhost/web")
+     BU_NAME=pr<N>-ui browser-use <<'PY'
+     t = new_tab("http://<worktree-slug>.localhost/web")
      wait_for_load()
-     print(page_info())
+     print(t, page_info())
      PY
      ```
-     Reuse the same tab in later calls (`current_tab()` / `switch_tab()`).
+     Reuse the same tab in later calls (`switch_tab(<t>)`), and `close_tab(<t>)` when step 2.2 is done.
    - **Capture screenshots while testing (UI tasks, mandatory)**: one PNG per verified state
      (e.g. before action, dialog open, after confirm). Save **outside the repo** to
      `${TMPDIR:-/tmp}/pr-shots/<branch-slug>/<NN>-<state>.png` so nothing can be committed by accident,
@@ -213,16 +253,21 @@ If Docker dies later (`docker.sock: no such file`), restart it and rerun only th
      capture_screenshot(path=...)
      js("document.querySelectorAll('.__pr_mark').forEach(e => e.remove())")
      ```
-   - `browser-use` not working (command missing, daemon cannot connect, `browser-use --doctor` fails)?
-     **Stop and ask the user** to check the `browser-use` CLI (install, Chrome remote debugging at
-     `chrome://inspect/#remote-debugging`, macOS remote-debugging approval). Do not fall back to another browser.
+   - `browser-use` not working (command missing, daemon cannot connect, port 9223 down)?
+     Run `agent-chrome` once; still failing → **stop and ask the user** with the exact error
+     (`/tmp/agent-chrome.log`). Do not fall back to another browser or launch another Chrome.
    - Login wall: use the project's documented local test login if it has one (FarmNet: `admin/admin` +
      `login_as_any_user`, see `references/farmnet.md`); otherwise stop and ask. Never type the user's own passwords.
-   - Verify layout and buttons visually before claiming completion.
+   - **Verify every key state with both screenshot and SQL**, never one alone: read the screenshot back and check
+     what the user sees (stage badge, buttons, field values, dialogs, layout), then query the same record in the
+     worktree DB (state/stage, ids, links, amounts). Pass only when both agree; a mismatch is a finding to report.
+     Record both in the 7.1 captions (e.g. `③ Approved badge · DB stage=reviewed`).
    - Blocked (no DB/stack/browser)? Say so in the status line and keep step 2.2 open; never report the UI as verified.
    - **Before any manual module upgrade, read the app log first.** Dev containers may already be upgrading the
-     changed modules on start; a parallel upgrade deadlocks. Still loading → watch (≤ 30 s polls) until HTTP 200;
-     then check the installed module version: already current → skip the upgrade; still old → run it.
+     changed modules on start; a parallel upgrade deadlocks. Still loading → start a readiness watcher
+     (`hub start name=pr<N>-ready application=sh args=["-c", "until curl -sf <url>/web/login >/dev/null; do sleep 3;
+     done; echo READY"]`) and continue; on its notice check the installed module version: already current → skip
+     the upgrade; still old → run it (`make upgrade` as a supervised process too).
 3. **Isolated Tests — user decides**:
    - Before running, **ask the user** (yes/no): "Run the isolated tests (~<N> min), or ship fast without them?"
      - **Yes** → run the project's isolated test target for every touched module
@@ -274,25 +319,33 @@ If Docker dies later (`docker.sock: no such file`), restart it and rerun only th
 
 ---
 
-## 4 — Dedicated Watcher Terminal (Bot Reviews & CI)
+## 4 — Background Watcher (CI & Review Bots)
 
-Do not freeze the main agent session with sleep loops!
+Never freeze the main session with sleep loops: one supervised watcher per phase, and the agent moves on.
 
-1. **Spawn Background Watcher Tab**:
+1. **User's view** — a PR-Watcher tab in Orca (for the human only):
    ```bash
    orca terminal create --worktree active --title "PR-Watcher" --command "gh pr checks <N> --watch" --json
    ```
-2. **Poll Review Bots**:
-   - Query inline comments:
-     ```bash
-     gh api "repos/{owner}/{repo}/pulls/<N>/comments" --jq '.[] | {id, path, line, body}'
-     ```
-   - If a bot reports usage limits exhausted, treat as terminal and proceed.
-3. **Stream Progress to Workspace Card**:
-   - As checks progress, update the comment so the user sees status on their sidebar:
-     ```bash
-     orca worktree set --worktree active --comment "CI running: <X>/<Y> passed..." --json
-     ```
+2. **Agent's watcher** — start right after the PR opens, and again after every push:
+   ```text
+   hub start name=pr<N>-ci application=bash cwd=<worktree> pty=false
+     args=["<skill-dir>/scripts/pr-watch.sh", "<N>", "<worktree>", "45"]
+   ```
+   It polls `gh pr checks --json` every 30 s, writes `PR #<N> CI: X/Y passed` to the Orca card on every change
+   (this replaces manual card updates), and exits with `RESULT: GREEN | FAILED <checks> | TIMEOUT` plus
+   `FAILED-CHECK: <name> <link>` lines and a `COMMENTS:` count (exit 0 / 1 / 2).
+   New push while it runs → `hub stop name=pr<N>-ci`, then start it again.
+3. **While it runs** → do the next independent work: 7.1 description + screenshot upload, reply drafts, cleanup
+   notes. No `sleep`, no status polls.
+4. **Review bots** — after `gh pr ready` (7.2) start `pr<N>-review` with a grace period so bots can register
+   their new runs (the draft runs show as `skipping`):
+   `args=["<skill-dir>/scripts/pr-watch.sh", "<N>", "<worktree>", "30", "120"]`.
+   On its notice read the comments (step 5.1):
+   ```bash
+   gh api "repos/{owner}/{repo}/pulls/<N>/comments" --jq '.[] | {id, path, line, body}'
+   ```
+   A bot reporting exhausted usage limits counts as done.
 
 ---
 
@@ -328,16 +381,15 @@ Do not freeze the main agent session with sleep loops!
 
 ## 6 — Watch CI Until 100% Green
 
-1. **Watch**: wait on the `gh pr checks <N> --watch` background job until every check settles.
-2. **Fix failures**: for a failed check,
+1. **Watch**: the `pr<N>-ci` watcher from step 4.2 — no polling. Its exit notice drives the next step:
+   exit 0 → 6.3 · exit 1 → 6.2 with the `FAILED-CHECK` lines from `hub logs` · exit 2 → stuck detection.
+2. **Fix failures**: for a failed GitHub Actions check,
    ```bash
    gh run view <run-id> --log-failed | tail -60
    ```
-   fix, commit, push, and loop back to 6.1. New comments → back to step 5.1.
-3. **Mark green**:
-   ```bash
-   orca worktree set --worktree active --comment "CI Green ✅ All checks passed" --json
-   ```
+   (Jenkins checks: open the check link with `browser-use` — Jenkins needs a login).
+   Fix, commit, push, restart the `pr<N>-ci` watcher, loop back to 6.1. New comments → back to step 5.1.
+3. **Mark green**: the watcher already wrote `CI Green ✅` to the Orca card; nothing else to run.
 
 ---
 
@@ -364,8 +416,8 @@ Merging is strictly a human decision.
    - Keep box chars aligned (monospace); wrap the chart in a fenced code block.
    - **UI task → attach the step 2.2 screenshots as GitHub user-attachments**, using the `browser-use` CLI only:
      1. Write the body text first with `gh pr edit <N> --body-file <scratchpad>/pr-body.md`.
-     2. `browser-use`: `new_tab("https://github.com/<owner>/<repo>/pull/<N>")` in the user's logged-in Chrome
-        (then `switch_tab`, never `activate_tab`), scroll the **new comment** box `#new_comment_field` into view.
+     2. `BU_NAME=pr<N>-gh browser-use`: `new_tab("https://github.com/<owner>/<repo>/pull/<N>")` in the agent Chrome
+        (logged in to GitHub), scroll the **new comment** box `#new_comment_field` into view.
      3. Upload by **drag-and-drop** (the only reliable path; `setFileInputFiles` + `change` does not trigger
         GitHub's uploader, and the `…` → Edit menu is ambiguous): for each PNG, `cdp("Input.dispatchDragEvent",
         type=…, x, y, data={"items": [], "files": [path], "dragOperationsMask": 1})` for `dragEnter`, `dragOver`,
@@ -382,8 +434,8 @@ Merging is strictly a human decision.
    gh pr ready <N>
    ```
    This triggers the review bots (`ready_for_review`) and notifies humans.
-3. **Review round after ready**: wait for the bots (background jobs, ≤ 30 s polls), then loop 5.1 → 5.5 → 6
-   until no new comment; update 7.1 if a fix changes behavior or screenshots.
+3. **Review round after ready**: start the `pr<N>-review` watcher (step 4.4) and continue; on its notice loop
+   5.1 → 5.5 → 6 until no new comment; update 7.1 if a fix changes behavior or screenshots.
 4. **Final reply scan** (5.5) → must be clean.
 5. **Set Card Status to In-Review**:
    ```bash
@@ -398,11 +450,15 @@ Merging is strictly a human decision.
 
 Once user confirms PR is merged:
 
-1. **Verify Squash Diff**:
+1. **Verify Squash Diff** — compare the *change*, not the trees (main may have moved on; the remote branch is
+   usually auto-deleted, so use the local branch):
    ```bash
    git -C <main-repo> fetch origin --prune --quiet
-   git -C <main-repo> diff <merge_sha> origin/<branch>   # MUST BE COMPLETELY EMPTY
+   M=<merge_sha>; B=<branch>
+   git diff $M^ $M | git patch-id --stable                          # squash commit
+   git diff $(git merge-base $B $M^) $B | git patch-id --stable     # branch → MUST print the same id
    ```
+   Same id (and same `--name-only` list) → nothing lost. Different → diff the two patches and report.
 2. **Project Teardown**:
    - Run project-specific destroy commands (e.g. `make wt-destroy` to drop cloned DB/filestore).
 3. **Clean Orca Terminals (Kill PTYs)**:
