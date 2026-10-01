@@ -23,7 +23,7 @@ A task is never created with any of these missing.
 
 | Field | Rule |
 |---|---|
-| Title | `[CODE] Mô tả` — CODE is the 2–4 letter code of the primary label (table below), uppercase A–Z only, e.g. `[SO] Luồng phê duyệt ngoại lệ…`. Short, no ids or dates |
+| Title | `[CODE] Mô tả` — CODE is the exactly-4-letter code of the primary label (table below), uppercase A–Z only, e.g. `[SALE] Luồng phê duyệt ngoại lệ…`. Short, no ids or dates |
 | Language | By reader: task for BA/Ops (business flow, OPS label) → Vietnamese; dev-only (refactor, CI, infra) → English. Comments follow the task's language |
 | Labels | ≥1 domain label; the first one gives the title code. Nothing fits → ask to create a label (and its code), never invent a prefix |
 | Module | Best-fitting module; unclear → `Uncategorized` (reclassify later) |
@@ -35,16 +35,16 @@ A task is never created with any of these missing.
 
 ### Title codes
 
-Labels keep their full names; only the title prefix is short: 2–4 uppercase letters A–Z, no digits, no lowercase.
+Labels keep their full names; only the title prefix is short: exactly 4 uppercase letters A–Z, no digits, no lowercase.
 
 | Label | Code | Label | Code | Label | Code |
 |---|---|---|---|---|---|
-| SO | SO | DISBURSEMENT | DR | DEBT | DEBT |
-| PR (payment request) | PR | REPAYMENT | RPMT | INVOICE | INV |
-| APPENDIX | PL | TREASURY | TRS | FORM | FORM |
+| SO | SALE | DISBURSEMENT | DISB | DEBT | DEBT |
+| PR (payment request) | PREQ | REPAYMENT | RPMT | INVOICE | INVC |
+| APPENDIX | APDX | TREASURY | TRSY | FORM | FORM |
 | SYNC | SYNC | DATA | DATA | PLANNING | PLAN |
-| OEM | OEM | OPS | OPS | INFRA | INFR |
-| OBSERVABILITY | OBS | BANK | BANK | CREDIT | CRED |
+| OEM | OEMP | OPS | OPER | INFRA | INFR |
+| OBSERVABILITY | OBSV | BANK | BANK | CREDIT | CRED |
 | CUSTOMER | CUST | | | | |
 
 ## Create
