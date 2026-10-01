@@ -67,6 +67,8 @@ Labels keep their full names; only the title prefix is short: exactly 4 uppercas
    Skip `Uncategorized` (holding area, no timeline).
    Done task without dates (old data) → backfill `start_date` = date of `created_at`, `target_date` = date of
    `completed_at` (UTC+7, moved to working days with `workdays.py`), then re-sync the module.
+   Module status follows its tasks: all non-cancelled tasks Done → `completed`; any task In Progress → `in-progress`;
+   otherwise `planned`. Set it in the same `module update` as the timeline.
 5. Related tasks → `references/relations.md`.
 6. Reply in the output format below, then list every field that was defaulted.
 
