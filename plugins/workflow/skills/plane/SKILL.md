@@ -61,7 +61,10 @@ Labels keep their full names; only the title prefix is short: exactly 4 uppercas
    - Suggested (not user-given) timeline → confirm with the `ask` tool before creating: title, labels, module,
      priority, assignee, start/due with working-day count, skipped days, workload conflicts, checklist.
 3. `workitem create` with name, description_html, state, priority, assignees, labels, start_date, target_date (and `parent`).
-4. `module manage_workitems module_id=… add_ids=<new id>` — module is not a create field.
+4. `module manage_workitems module_id=… add_ids=<new id>` — module is not a create field. Then sync the module
+   timeline: `module list_workitems` → `module update start_date=<earliest task start> target_date=<latest task due>`
+   over the module's non-cancelled tasks. Do the same whenever a task's dates change or a module is cleaned up.
+   Skip `Uncategorized` (holding area, no timeline).
 5. Related tasks → `references/relations.md`.
 6. Reply in the output format below, then list every field that was defaulted.
 
