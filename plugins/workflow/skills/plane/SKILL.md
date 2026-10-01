@@ -112,6 +112,18 @@ Bug / hotfix:
 
 English task: `Context:` / `Symptom:` and the same items in English.
 
+## Formatting for the Plane editor (description and comments)
+
+Plane renders HTML in a proportional font and narrow table columns. Two layouts break (seen on DICHVUFARM-108):
+
+| Breaks | Why | Do instead |
+|---|---|---|
+| ASCII art: box tables `┌─┬─┐ │ │`, arrow trees `├──►`, aligned columns made with spaces | In `<p>…<br>` the spaces collapse and characters have different widths, so boxes and arrows go out of line. Even inside `<pre><code>` Plane drops leading spaces, so tree branches lose their indentation | Real `<table>` for tabular data; `<ol>`/`<ul>` for steps and trees; a flow on one line `A → B → C`. A real diagram → attach an image (Attach), never draw it with characters |
+| Two-column "key │ value" `<table>` with long `<code>` values | Plane gives each column ~150px, so long identifiers wrap mid-word (`vendor_transfe` / `r`) | Key/value pairs as a list: `<li><b>XML ID:</b> <code>farmnet_debt.agreement_vendor_transfer</code></li>`. Use a table only when every cell is short and there are 3+ columns |
+
+Also: keep one topic per comment (a whole spec in one comment is unreadable — split by section); `<code>` only for
+identifiers, not for sentences or long flows.
+
 ## While working
 
 - Tick a box: read `description_html`, flip only that item to `data-checked="true"`, write the whole body back
