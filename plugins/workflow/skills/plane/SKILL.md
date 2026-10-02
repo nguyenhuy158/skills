@@ -132,6 +132,17 @@ Plane renders HTML in a proportional font and narrow table columns. Two layouts 
 Also: keep one topic per comment (a whole spec in one comment is unreadable — split by section and lead each part
 with `<b>Spec i/n:</b>`); `<code>` only for identifiers, not for sentences or long flows.
 
+## Ownership check before any edit
+
+Before changing an existing work item, comment, or module (update, move, tick, delete, relation), read its
+`created_by` and compare with `member me`:
+
+- **Created by me** → edit freely.
+- **Created by someone else** → do not write. List exactly what would change (item, field, old → new) with the
+  creator's name (`member list_workspace`), ask with the `ask` tool, and repeat until the user confirms. Only the
+  confirmed items are edited. A bulk edit splits into "mine" (done) and "others" (held for confirmation).
+- Modules: check the module's `created_by` the same way before `module update` / `manage_workitems`.
+
 ## While working
 
 - Tick a box: read `description_html`, flip only that item to `data-checked="true"`, write the whole body back
