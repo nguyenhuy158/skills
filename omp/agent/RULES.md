@@ -1,3 +1,11 @@
+# Hard limits (ask first, every time)
+
+- Git: never `commit --amend` or `push --force`/`--force-with-lease`, never push to `main`/`master`, never `gh pr merge`/`close` unless the user asked for that exact action in this conversation. Follow-up changes are new commits.
+- Production: never write to production — `odoo-prod` MCP writes/`execute_method`, prod hosts, prod databases, Dokploy prod deploys, release tags — without an explicit go-ahead naming the action. Read-only queries are fine.
+- Data: never drop or truncate a database, delete a filestore, or run `rm -rf` outside a path you created in this task, without confirmation.
+- Secrets: never print, paste or commit `.env` values, API keys or passwords; reference them by variable name.
+- Nested agents: when launching `omp` from bash inside Orca, unset `ORCA_TERMINAL_HANDLE` and `ORCA_PANE_KEY` (`env -u ORCA_TERMINAL_HANDLE -u ORCA_PANE_KEY omp ...`) so the child does not rename the parent's tab.
+
 # Browser automation
 
 - Use the `browser-use` CLI only (read `skill://browser-use` for helpers). Never agent-browser, Playwright/Puppeteer, Orca's embedded browser, or the omp `browser` eval object.
