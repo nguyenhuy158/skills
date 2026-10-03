@@ -1,0 +1,50 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"/Users/huyntq/.omp/agent/hooks/claude-adapter.mjs\" \"/Users/huyntq/.omp/agent/vendor/claude-code-hooks/plugins/git-safety/git-safety.js\""
+          },
+          {
+            "type": "command",
+            "command": "node \"/Users/huyntq/.omp/agent/hooks/claude-adapter.mjs\" \"/Users/huyntq/.omp/agent/vendor/claude-code-hooks/plugins/case-insensitive-guard/case-insensitive-guard.js\""
+          }
+        ]
+      },
+      {
+        "matcher": "Read|Edit|Write|Bash|Grep",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"/Users/huyntq/.omp/agent/hooks/claude-adapter.mjs\" \"/Users/huyntq/.omp/agent/vendor/claude-code-hooks/plugins/protect-secrets/protect-secrets.js\"",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Bash|Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"/Users/huyntq/.omp/agent/hooks/claude-adapter.mjs\" \"/Users/huyntq/.omp/agent/vendor/claude-code-hooks/plugins/protect-tests/protect-tests.js\""
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"/Users/huyntq/.omp/agent/hooks/claude-adapter.mjs\" \"/Users/huyntq/.omp/agent/vendor/claude-code-hooks/plugins/format-code/format-code.js\" --only \"/(farmnet-github|farmlink)/.*\\\\.py$\"",
+            "timeout": 60
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "servers": {
+    "basedpyright": {
+      "rootMarkers": ["pyproject.toml", "pyrightconfig.json", "setup.py", "requirements.txt", "ruff.toml"],
+      "settings": {
+        "basedpyright": {
+          "analysis": {
+            "typeCheckingMode": "off",
+            "extraPaths": ["/Users/huyntq/.cache/odoo16", "src"],
+            "diagnosticMode": "openFilesOnly"
+          }
+        }
+      }
+    }
+  },
+  "idleTimeoutMs": 600000
+}
