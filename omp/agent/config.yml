@@ -373,3 +373,5 @@ retry:
   fallbackChains:
     default:
       - techcoop-luna/gpt-luna:high
+recap:
+  idleSeconds: 60
