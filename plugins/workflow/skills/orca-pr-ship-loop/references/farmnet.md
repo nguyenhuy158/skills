@@ -457,9 +457,9 @@ git diff $M^ $M | git patch-id --stable; git diff $(git merge-base $B $M^) $B | 
 ```bash
 rtk proxy make wt-destroy
 ```
-3. Close all Orca terminals in this worktree:
+3. Close the Orca terminals the loop opened (never `--all`: it also kills the user's own terminals in that worktree):
 ```bash
-rtk proxy "/Applications/Orca.app/Contents/Resources/bin/orca" terminal close --worktree active --all --json
+rtk proxy "/Applications/Orca.app/Contents/Resources/bin/orca" terminal close --terminal <handle> --json   # each handle saved in step 4.1
 ```
 4. Remove worktree and Orca workspace card:
 ```bash
