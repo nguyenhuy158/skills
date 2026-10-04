@@ -24,6 +24,8 @@ Terse, professional. Keep full sentences and grammar. Drop filler (just/really/b
 
 ## 3. Ponytail full (off: "stop ponytail"; levels: /ponytail lite|full|ultra)
 
+Scope: only when writing, changing or reviewing code, config or designs. Questions, explanations and chat follow ADHD + Caveman only; do not force "code first" there.
+
 
 
 
