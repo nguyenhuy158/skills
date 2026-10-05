@@ -135,6 +135,7 @@ Skills available after install:
 | `/workflow:commit-style` | Enforce Conventional Commits format |
 | `/workflow:code-polish` | Remove comments, extract constants, self-documenting Python |
 | `/workflow:release-note` | Draft the Vietnamese production release note from release tags |
+| `/workflow:weekly-release-note` | Weekly FN/FL/Bank service release recap from Slack, detailed + high-level |
 | `/workflow:introduction` | Draft introductions for people, projects, products, teams |
 | `/workflow:retro` | Distil session lessons into hindsight memory, deduping against what is already stored |
 | `/workflow:pr-ship-loop` | Ship a change end-to-end: worktree, gate, PR, bot reviews, CI watch, cleanup |
