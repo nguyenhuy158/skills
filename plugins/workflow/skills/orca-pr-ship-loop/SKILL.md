@@ -298,6 +298,11 @@ If Docker dies later (`docker.sock: no such file`), restart it and rerun only th
      no migration, no version bump. Fix dev/local data with a one-off hotfix (SQL/RPC on that env) or a DB
      restore instead, and say which in the status line. Write the migration only when prod actually holds
      the broken data.
+   - **Migration shape — copy the repo, never invent**: read `skill://odoo-migration` and the closest existing
+     `migrations/<ver>/` in the repo first. FarmNet backfill of a stored compute = snapshot `write_date`/`write_uid`
+     in pre → Odoo adds the column → post `env.add_to_compute` + `flush_recordset` → restore snapshot, drop table.
+     A raw `UPDATE … CASE` duplicating the compute is wrong (rule lives in two places). Verify on the worktree DB:
+     0 rows with a new `write_date` after the upgrade.
 
 ---
 
