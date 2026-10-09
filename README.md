@@ -134,6 +134,7 @@ Skills available after install:
 | `/workflow:odoo-migration` | Write Odoo upgrade migrations without dirtying `write_date` |
 | `/workflow:commit-style` | Enforce Conventional Commits format |
 | `/workflow:code-polish` | Remove comments, extract constants, self-documenting Python |
+| `/workflow:release-tag` | Cut the next `release/vX.Y.Z` tag on `origin/main` and watch the Release build |
 | `/workflow:release-note` | Draft the Vietnamese production release note from release tags |
 | `/workflow:weekly-release-note` | Weekly FN/FL/Bank service release recap from Slack, detailed + high-level |
 | `/workflow:introduction` | Draft introductions for people, projects, products, teams |
