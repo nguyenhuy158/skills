@@ -1,0 +1,361 @@
+<title>Topic Design</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<style>
+  /* House style: each section is a sheet on a warm desk. Coral marks the ONE system this design is about; everything else is warm grey. */
+  :root {
+    --bg: #f4f2ee; --surface: #ffffff; --tint: #faf9f6; --fg: #22252a; --muted: #5f636a;
+    --line: #e6e2db; --line-strong: #bdb8ae;
+    --coral: #d9573a; --coral-soft: #fbe9e3; --coral-node: #fff7f4;
+    --ok: #2f7a55; --ok-soft: #e3f1e9; --warn: #a8660b; --warn-soft: #fbf0dc; --code-bg: #efede8;
+    --f-body: "Be Vietnam Pro", "Plus Jakarta Sans", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; --f-display: var(--f-body); --f-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #1a1917; --surface: #23221f; --tint: #2a2925; --fg: #ecebe6; --muted: #a29f97;
+      --line: #36342f; --line-strong: #57544c; --coral: #ef7a5c; --coral-soft: #3a241d; --coral-node: #31211b;
+      --ok: #6cc196; --ok-soft: #1c3127; --warn: #e2a64c; --warn-soft: #362a16; --code-bg: #302e2a;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #1a1917; --surface: #23221f; --tint: #2a2925; --fg: #ecebe6; --muted: #a29f97;
+    --line: #36342f; --line-strong: #57544c; --coral: #ef7a5c; --coral-soft: #3a241d; --coral-node: #31211b;
+    --ok: #6cc196; --ok-soft: #1c3127; --warn: #e2a64c; --warn-soft: #362a16; --code-bg: #302e2a;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 15.5px/1.65 var(--f-body); padding-inline: 16px; padding-block: 32px 64px; }
+  main { max-width: 1120px; margin-inline: auto; display: flex; flex-direction: column; gap: 28px; }
+  [data-lang="en"] .vi, [data-lang="vi"] .en { display: none; }
+  .ic { width: 1.05em; height: 1.05em; display: inline-block; vertical-align: -0.16em; stroke-width: 2; flex-shrink: 0; margin-right: .15em; }
+  h2 .ic, h3 .ic, h4 .ic { color: var(--coral); }
+  h2 .ic { margin-right: -6px; align-self: center; }
+  h1, h2 { font-family: var(--f-display); font-weight: 700; text-wrap: balance; margin: 0; letter-spacing: -0.01em; }
+  h1 { font-size: clamp(28px, 5vw, 38px); line-height: 1.15; }
+  h2 { font-size: 28px; display: flex; align-items: baseline; gap: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--line); margin-bottom: 14px; }
+  h2 .n { display: inline-grid; place-items: center; min-width: 34px; height: 26px; border-radius: 6px; background: var(--coral-soft); color: var(--coral); font: 500 13px var(--f-mono); letter-spacing: .06em; }
+  h3 { font-size: 12.5px; text-transform: uppercase; letter-spacing: .08em; font-weight: 600; margin: 34px 0 12px; display: flex; align-items: center; gap: 10px; }
+  h3::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+  h4 { margin: 0 0 8px; font: 600 16px var(--f-body); }
+  p { margin: 0 0 12px; max-width: 72ch; }
+  .lede { color: var(--muted); font-size: 16px; margin-bottom: 18px; }
+  code { font: 12.5px var(--f-mono); background: var(--code-bg); padding: 1px 5px; border-radius: 3px; overflow-wrap: anywhere; }
+  a { color: inherit; text-decoration-color: var(--line-strong); text-underline-offset: 2px; }
+  ul, ol { margin: 0; padding-left: 20px; }
+  li { margin-bottom: 4px; }
+
+  header { position: relative; background: var(--surface); border: 1px solid var(--line); border-top: 4px solid var(--coral); border-radius: 12px; padding: 28px; }
+  .langs { position: absolute; top: 20px; right: 20px; display: inline-flex; border: 1px solid var(--line-strong); border-radius: 999px; overflow: hidden; }
+  .langs button { font: 600 11px/1 var(--f-mono); letter-spacing: .06em; padding: 7px 12px; border: 0; background: var(--surface); color: var(--muted); cursor: pointer; }
+  .langs button[aria-pressed="true"] { background: var(--fg); color: var(--surface); }
+  .meta { font: 500 12px var(--f-mono); color: var(--muted); margin-top: 6px; }
+  nav { position: sticky; top: 0; z-index: 5; margin-top: -16px; display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; background: color-mix(in srgb, var(--surface) 94%, transparent); backdrop-filter: blur(6px); padding: 10px 20px; border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 4px 14px rgba(60,50,40,.06); }
+  nav a { color: var(--muted); text-decoration: none; border-bottom: 1px solid var(--line); padding: 2px 0; }
+  nav a:hover, nav a:focus-visible { color: var(--fg); border-color: var(--fg); outline: none; }
+  main > section { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 28px; scroll-margin-top: 56px; }
+
+  .grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+  .card { background: var(--tint); border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px; font-size: 13.5px; min-width: 0; }
+  .card.ai { border-top: 3px solid var(--coral); }
+  .card p { margin-bottom: 8px; }
+  .card .sub { color: var(--muted); font-size: 12.5px; margin: -4px 0 8px; }
+  .tag { font: 500 10.5px var(--f-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--warn); background: var(--warn-soft); border-radius: 4px; padding: 1px 6px; white-space: nowrap; }
+  .pill { font: 500 12px var(--f-mono); padding: 1px 7px; border-radius: 10px; background: var(--code-bg); white-space: nowrap; }
+  .note { font-size: 13px; color: var(--muted); margin-top: 10px; }
+  pre.snip { margin: 0; font: 12px/1.55 var(--f-mono); background: var(--code-bg); padding: 12px; border: 1px solid var(--line); border-radius: 8px; overflow-x: auto; white-space: pre; }
+  .scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+  th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; background: var(--tint); }
+  tr:last-child td { border-bottom: 0; }
+
+  /* Workflow board: phase cards → swimlanes (grid) → clickable nodes, wires drawn in SVG → detail panel */
+  .wf-phases { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  .wf-phases button { font: inherit; font-size: 13.5px; text-align: left; cursor: pointer; border: 1.5px solid var(--line-strong); background: var(--surface); color: var(--fg); border-radius: 8px; padding: 8px 12px; display: flex; gap: 10px; align-items: center; }
+  .wf-phases button b { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: var(--code-bg); font: 600 12px var(--f-mono); }
+  .wf-phases button span { display: flex; flex-direction: column; line-height: 1.25; }
+  .wf-phases button small { color: var(--muted); font-size: 12px; }
+  .wf-phases button[aria-selected="true"] { border-color: var(--fg); box-shadow: 0 0 0 1px var(--fg); }
+  .wf-phases button[aria-selected="true"] b { background: var(--fg); color: var(--surface); }
+  .wf-phases button.ai b { background: var(--coral-soft); color: var(--coral); }
+  .wf-phases button.ai[aria-selected="true"] { border-color: var(--coral); box-shadow: 0 0 0 1px var(--coral); }
+  .wf-phases button.ai[aria-selected="true"] b { background: var(--coral); color: var(--surface); }
+  .wf-phases button:focus-visible, .wf-node:focus-visible, .wf-tools button:focus-visible { outline: 2px solid var(--coral); outline-offset: 2px; }
+  .wf-board { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .wf-scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+  .wf-flow { position: relative; display: grid; min-width: 640px; }
+  .wf-lane { position: sticky; left: 0; z-index: 2; grid-column: 1; display: flex; align-items: center; padding: 0 10px; font: 500 11px var(--f-mono); color: var(--muted); border-bottom: 1px solid var(--line); background: var(--tint); }
+  .wf-lane.ai { color: var(--coral); background: var(--coral-soft); }
+  .wf-band { border-bottom: 1px solid var(--line); }
+  .wf-band.ai { background: linear-gradient(90deg, var(--coral-soft), transparent 70%); opacity: .55; }
+  .wf-lane.last, .wf-band.last { border-bottom: 0; }
+  .wf-node { position: relative; z-index: 1; align-self: center; justify-self: center; width: calc(100% - 14px); max-width: 128px; margin: 12px 0; font: inherit; font-size: 12.5px; line-height: 1.3; text-align: center; cursor: pointer; border: 1.5px solid var(--line-strong); background: var(--surface); color: var(--fg); border-radius: 6px; padding: 8px 6px; }
+  .wf-node.ai { border-color: var(--coral); background: var(--coral-node); }
+  .wf-node.ext { border-style: dashed; background: var(--tint); }
+  .wf-node.fail::after { content: ""; position: absolute; top: -4px; right: -4px; width: 9px; height: 9px; border-radius: 50%; background: var(--warn); border: 2px solid var(--surface); }
+  .wf-node[aria-pressed="true"] { border-color: var(--fg); box-shadow: 0 0 0 2px var(--fg); }
+  .wf-node.ai[aria-pressed="true"] { border-color: var(--coral); box-shadow: 0 0 0 2px var(--coral); }
+  .wf-node .k { display: block; font: 500 10px var(--f-mono); color: var(--muted); margin-bottom: 2px; }
+  .wf-wires { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; overflow: visible; }
+  .wf-wires path { fill: none; stroke: var(--line-strong); stroke-width: 1.5; }
+  .wf-wires path.dash { stroke-dasharray: 4 4; }
+  .wf-wires path.on { stroke: var(--fg); stroke-width: 2; }
+  .wf-wires .ah { fill: var(--line-strong); }
+  .wf-wires .ah.on { fill: var(--fg); }
+  .wf-tools { display: flex; gap: 8px; align-items: center; }
+  .wf-tools button, .wf-detail button { font: inherit; font-size: 13px; cursor: pointer; border: 1px solid var(--line-strong); background: var(--surface); border-radius: 6px; padding: 5px 10px; color: var(--fg); }
+  .wf-detail { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 4px 28px; align-items: start; background: var(--tint); border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px; font-size: 13.5px; min-width: 0; }
+  .wf-detail > div { min-width: 0; }
+  .wf-detail .side { padding-top: 20px; }
+  .wf-detail .who { font: 500 11px var(--f-mono); color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+  .wf-detail .who.ai { color: var(--coral); }
+  .wf-detail h4 { font-family: var(--f-display); font-size: 19px; margin: 2px 0 8px; }
+  .wf-detail p { margin: 0 0 10px; }
+  .wf-detail dl { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 10px; margin: 0 0 10px; font-size: 12.5px; }
+  .wf-detail dt { color: var(--muted); }
+  .wf-detail dd { margin: 0; }
+  .wf-detail .fails { background: var(--warn-soft); border-radius: 6px; padding: 8px 10px; font-size: 12.5px; margin-bottom: 10px; }
+  .wf-detail .fails b { color: var(--warn); display: block; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 2px; }
+  .wf-detail .fails ul { padding-left: 16px; }
+
+  /* Decisions: settled (✓) and open (numbered, warn) */
+  .dec h4 { display: flex; align-items: center; gap: 8px; }
+  .dec h4::before { content: "✓"; display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: var(--ok-soft); color: var(--ok); font-size: 12px; }
+  .dec ul { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+  .dec li { margin: 0; color: var(--muted); }
+  .dec li b { display: block; color: var(--fg); font-weight: 600; }
+  .oq { border-left: 3px solid var(--warn); }
+  .oq-h { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin-bottom: 10px; }
+  .oq-h > b { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: var(--warn-soft); color: var(--warn); font: 600 12px var(--f-mono); }
+  .oq-h h4 { margin: 0; flex: 1 1 auto; }
+
+  @media (max-width: 900px) { .grid3 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 680px) {
+    header, main > section { padding: 20px 16px; }
+    header { padding-top: 56px; }
+    nav { padding-inline: 14px; }
+    .grid2, .grid3 { grid-template-columns: minmax(0, 1fr); }
+    .wf-detail { grid-template-columns: minmax(0, 1fr); }
+    .wf-detail .side { padding-top: 0; }
+  }
+</style>
+
+<main id="doc" data-lang="en">
+<header>
+  <div class="langs" role="group" aria-label="Language">
+    <button type="button" aria-pressed="true" data-lang="en">EN</button>
+    <button type="button" aria-pressed="false" data-lang="vi">VI</button>
+  </div>
+  <h1><i data-lucide="landmark" class="ic"></i> <span class="en">Topic: what changes</span><span class="vi">Chủ đề: thay đổi gì</span></h1>
+  <p class="lede" style="margin-top:8px"><span class="en">One A2 sentence: what this design moves, and why.</span><span class="vi">1 câu: thiết kế này đổi gì, vì sao.</span></p>
+  <div class="meta"><span class="en">SystemA × SystemB · draft DD/MM/YYYY</span><span class="vi">SystemA × SystemB · bản DD/MM/YYYY</span></div>
+</header>
+
+<nav aria-label="Sections">
+  <a href="#overview">1 · Overview</a><a href="#workflow">2 · Workflow</a><a href="#contract">3 · Contract</a><a href="#decisions">4 · Decisions</a>
+</nav>
+
+<section id="overview">
+  <h2><span class="n">01</span><i data-lucide="compass" class="ic"></i><span class="en">Overview</span><span class="vi">Tổng quan</span></h2>
+  <div class="card ai" style="margin-bottom:18px">
+    <h4><i data-lucide="zap" class="ic"></i> TL;DR</h4>
+    <ul class="en"><li><b>What:</b> …</li><li><b>Why:</b> …</li><li><b>Scope:</b> …</li></ul>
+    <ul class="vi"><li><b>Làm gì:</b> …</li><li><b>Vì sao:</b> …</li><li><b>Phạm vi:</b> …</li></ul>
+  </div>
+  <h3><i data-lucide="users" class="ic"></i><span class="en">Who owns what</span><span class="vi">Ai giữ phần nào</span></h3>
+  <div class="grid3">
+    <div class="card"><h4>System A</h4><p class="sub">role</p><ul><li>…</li></ul></div>
+    <div class="card ai"><h4>Focus system</h4><p class="sub">role</p><ul><li>…</li></ul></div>
+    <div class="card"><h4>System C</h4><p class="sub">role</p><ul><li>…</li></ul></div>
+  </div>
+</section>
+
+<section id="workflow">
+  <h2><span class="n">02</span><i data-lucide="workflow" class="ic"></i><span class="en">Workflow</span><span class="vi">Luồng xử lý</span></h2>
+  <p class="lede"><span class="en">Pick a phase, then a step. A dot on a step means it can fail there; <span class="tag">proposed</span> marks a step whose shape is still open.</span><span class="vi">Chọn phase, rồi chọn bước. Chấm cam = bước có thể lỗi; <span class="tag">proposed</span> = bước chưa chốt.</span></p>
+  <div class="wf-phases" role="tablist" aria-label="Phases" id="wfPhases"></div>
+  <div class="wf-board">
+    <div class="wf-scroll"><div class="wf-flow" id="wfFlow"><svg class="wf-wires" id="wfWires" aria-hidden="true"></svg></div></div>
+    <div class="wf-tools"><button type="button" id="wfPlay"><i data-lucide="play" class="ic"></i> <span class="en">Play this phase</span><span class="vi">Chạy phase này</span></button></div>
+    <div class="wf-detail" id="wfDetail" aria-live="polite"></div>
+  </div>
+  <p class="note"><span class="en">One line about what happens outside the flow.</span><span class="vi">1 dòng về việc ngoài luồng.</span></p>
+</section>
+
+<section id="contract">
+  <h2><span class="n">03</span><i data-lucide="file-code" class="ic"></i><span class="en">Contract</span><span class="vi">Hợp đồng</span></h2>
+  <div class="grid2">
+    <pre class="snip">request
+  string field_a
+  bytes  field_b</pre>
+    <pre class="snip">response
+  enum status
+    OK | NEEDS_REVIEW
+  string reason</pre>
+  </div>
+</section>
+
+<section id="decisions">
+  <h2><span class="n">04</span><i data-lucide="list-checks" class="ic"></i><span class="en">Decisions</span><span class="vi">Quyết định</span></h2>
+  <div class="grid2">
+    <div class="card dec"><h4><span class="en">Settled</span><span class="vi">Đã chốt</span></h4>
+      <ul><li><b>…</b><span class="en">why</span><span class="vi">vì sao</span></li></ul></div>
+    <div class="card oq"><div class="oq-h"><b>1</b><h4><span class="en">Open question?</span><span class="vi">Câu hỏi cần chốt?</span></h4><span class="tag">proposed</span></div>
+      <ul><li><span class="en">Option / default</span><span class="vi">Lựa chọn / mặc định</span></li></ul></div>
+  </div>
+</section>
+</main>
+
+<script>
+(() => {
+  const doc = document.getElementById('doc');
+  const langBtns = document.querySelectorAll('.langs button');
+  function setLang(lang) {
+    doc.dataset.lang = lang;
+    langBtns.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === lang)));
+    try { localStorage.setItem('lang', lang); } catch (e) {}
+    if (phase) draw();
+  }
+  langBtns.forEach(b => b.addEventListener('click', () => setLang(b.dataset.lang)));
+
+  // Bilingual text: a plain string, or {en, vi}.
+  const T = x => typeof x === 'string' ? x : `<span class="en">${x.en}</span><span class="vi">${x.vi}</span>`;
+  const P = '<span class="tag">proposed</span>';
+  const icons = () => { try { lucide.createIcons(); } catch (e) {} };
+
+  // Data: one entry per phase. lanes: [key, label, isFocus]; node: lane, col, t, d, io [[k, v]], fail [..], kind 'ext', ai 1, go 'B'; edges: [from, to, dashed].
+  const PHASES = [
+    { id: 'A', name: { en: 'Request', vi: 'Gửi yêu cầu' }, sub: { en: 'caller → focus', vi: 'bên gọi → hệ thống chính' }, cols: 4,
+      lanes: [['a', 'System A'], ['f', 'Focus system', 1], ['ext', 'external']],
+      nodes: [
+        { id: 'a1', lane: 'a', col: 1, t: { en: 'Send request', vi: 'Gửi yêu cầu' }, d: { en: 'What A sends.', vi: 'A gửi gì.' }, io: [['Sends', '<code>field_a</code>']] },
+        { id: 'a2', lane: 'f', col: 2, ai: 1, t: { en: 'Auth + validate', vi: 'Xác thực + kiểm tra' }, d: { en: 'Checks the caller.', vi: 'Kiểm tra bên gọi.' }, fail: ['<code>PERMISSION_DENIED</code>'] },
+        { id: 'a3', lane: 'f', col: 3, ai: 1, t: { en: 'Do the work', vi: 'Xử lý' }, d: { en: 'Main step.', vi: 'Bước chính.' }, note: P },
+        { id: 'a3x', lane: 'ext', col: 3, kind: 'ext', t: 'Postgres', d: { en: 'Read only.', vi: 'Chỉ đọc.' } },
+        { id: 'a4', lane: 'a', col: 4, go: 'B', t: { en: 'Receive', vi: 'Nhận kết quả' }, d: { en: 'A stores the result.', vi: 'A lưu kết quả.' } },
+      ],
+      edges: [['a1', 'a2'], ['a2', 'a3'], ['a3', 'a3x', 1], ['a3', 'a4']] },
+    { id: 'B', name: { en: 'Store', vi: 'Lưu' }, sub: { en: 'result on the row', vi: 'kết quả vào dòng' }, cols: 2,
+      lanes: [['a', 'System A']],
+      nodes: [
+        { id: 'b1', lane: 'a', col: 1, t: { en: 'Save', vi: 'Lưu' }, d: { en: '…', vi: '…' } },
+        { id: 'b2', lane: 'a', col: 2, t: { en: 'Show user', vi: 'Hiện cho user' }, d: { en: '…', vi: '…' } },
+      ],
+      edges: [['b1', 'b2']] },
+  ];
+  const FOCUS_PHASE = 'A';
+
+  const $ph = document.getElementById('wfPhases'), $flow = document.getElementById('wfFlow');
+  const $wires = document.getElementById('wfWires'), $det = document.getElementById('wfDetail');
+  const NS = 'http://www.w3.org/2000/svg';
+  let phase, sel, playing = false;
+
+  PHASES.forEach(p => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.setAttribute('role', 'tab'); b.dataset.id = p.id;
+    if (p.nodes.some(n => n.ai)) b.className = 'ai';
+    b.innerHTML = `<b>${p.id}</b><span>${T(p.name)}<small>${T(p.sub)}</small></span>`;
+    b.onclick = () => show(p.id);
+    $ph.appendChild(b);
+  });
+
+  function show(id, nodeId) {
+    phase = PHASES.find(p => p.id === id);
+    [...$ph.children].forEach(b => b.setAttribute('aria-selected', b.dataset.id === id));
+    $flow.querySelectorAll(':scope > :not(svg)').forEach(e => e.remove());
+    $flow.style.gridTemplateColumns = `112px repeat(${phase.cols}, minmax(88px, 1fr))`;
+    $flow.style.gridTemplateRows = `repeat(${phase.lanes.length}, minmax(70px, auto))`;
+    phase.lanes.forEach(([k, label, ai], i) => {
+      const last = i === phase.lanes.length - 1 ? ' last' : '';
+      const l = document.createElement('div');
+      l.className = 'wf-lane' + (ai ? ' ai' : '') + last; l.style.gridRow = i + 1; l.innerHTML = T(label);
+      const band = document.createElement('div');
+      band.className = 'wf-band' + (ai ? ' ai' : '') + last; band.style.gridRow = i + 1; band.style.gridColumn = `2 / ${phase.cols + 2}`;
+      $flow.append(l, band);
+    });
+    phase.nodes.forEach(n => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.id = 'wf-' + n.id;
+      b.className = 'wf-node' + (n.ai ? ' ai' : '') + (n.kind ? ' ' + n.kind : '') + (n.fail ? ' fail' : '');
+      b.style.gridRow = phase.lanes.findIndex(l => l[0] === n.lane) + 1;
+      b.style.gridColumn = n.col + 1;
+      b.innerHTML = (n.go ? `<span class="k">→ phase ${n.go}</span>` : '') + T(n.t);
+      b.onclick = () => pick(n.id);
+      $flow.appendChild(b);
+    });
+    pick(nodeId || phase.nodes[0].id);
+  }
+
+  function pick(id) {
+    sel = phase.nodes.find(n => n.id === id);
+    $flow.querySelectorAll('.wf-node').forEach(b => b.setAttribute('aria-pressed', b.id === 'wf-' + id));
+    const lane = phase.lanes.find(l => l[0] === sel.lane);
+    let h = `<div><div class="who${sel.ai || lane[2] ? ' ai' : ''}">Phase ${phase.id} · ${T(lane[1])}</div><h4>${T(sel.t)}</h4><p>${T(sel.d)}</p>`;
+    if (sel.note) h += `<p>${T(sel.note)}</p>`;
+    h += '</div><div class="side">';
+    if (sel.io) h += '<dl>' + sel.io.map(([k, v]) => `<dt>${T(k)}</dt><dd>${T(v)}</dd>`).join('') + '</dl>';
+    if (sel.fail) h += `<div class="fails"><b><i data-lucide="triangle-alert" class="ic"></i>${T({ en: 'Fails here', vi: 'Lỗi tại đây' })}</b><ul>${sel.fail.map(f => `<li>${T(f)}</li>`).join('')}</ul></div>`;
+    if (sel.go) h += `<button type="button" id="wfGo">${T({ en: 'Go to phase', vi: 'Sang phase' })} ${sel.go} →</button>`;
+    $det.innerHTML = h + '</div>';
+    icons();
+    const g = document.getElementById('wfGo');
+    if (g) g.onclick = () => show(sel.go);
+    draw();
+    const el = document.getElementById('wf-' + id), sc = $flow.parentElement;
+    if (el.offsetLeft + el.offsetWidth > sc.scrollLeft + sc.clientWidth || el.offsetLeft < sc.scrollLeft) sc.scrollLeft = el.offsetLeft - 120;
+  }
+
+  function draw() {
+    $wires.replaceChildren();
+    const box = $flow.getBoundingClientRect();
+    const r = id => {
+      const e = document.getElementById('wf-' + id).getBoundingClientRect();
+      return { l: e.left - box.left, r: e.right - box.left, t: e.top - box.top, b: e.bottom - box.top, cx: (e.left + e.right) / 2 - box.left, cy: (e.top + e.bottom) / 2 - box.top };
+    };
+    phase.edges.forEach(([f, t, dash]) => {
+      const a = r(f), z = r(t), on = sel && (sel.id === f || sel.id === t);
+      let d, tip, dir;
+      if (Math.abs(a.cx - z.cx) < 4) {
+        const down = z.cy > a.cy, y1 = down ? a.b : a.t, y2 = down ? z.t : z.b;
+        d = `M${a.cx},${y1} L${z.cx},${y2}`; tip = [z.cx, y2]; dir = down ? 'd' : 'u';
+      } else if (z.cx > a.cx) {
+        const x1 = a.r, x2 = z.l, k = Math.max(18, (x2 - x1) / 2);
+        d = `M${x1},${a.cy} C${x1 + k},${a.cy} ${x2 - k},${z.cy} ${x2},${z.cy}`; tip = [x2, z.cy]; dir = 'r';
+      } else {
+        const x1 = a.l, x2 = z.r, k = Math.max(18, (x1 - x2) / 2);
+        d = `M${x1},${a.cy} C${x1 - k},${a.cy} ${x2 + k},${z.cy} ${x2},${z.cy}`; tip = [x2, z.cy]; dir = 'l';
+      }
+      const path = document.createElementNS(NS, 'path');
+      path.setAttribute('d', d); path.setAttribute('class', (dash ? 'dash' : '') + (on ? ' on' : ''));
+      $wires.appendChild(path);
+      if (dash) return;
+      const [x, y] = tip, s = 5;
+      const pts = dir === 'r' ? `${x},${y} ${x - 2 * s},${y - s} ${x - 2 * s},${y + s}`
+        : dir === 'l' ? `${x},${y} ${x + 2 * s},${y - s} ${x + 2 * s},${y + s}`
+        : dir === 'd' ? `${x},${y} ${x - s},${y - 2 * s} ${x + s},${y - 2 * s}`
+        : `${x},${y} ${x - s},${y + 2 * s} ${x + s},${y + 2 * s}`;
+      const poly = document.createElementNS(NS, 'polygon');
+      poly.setAttribute('points', pts); poly.setAttribute('class', 'ah' + (on ? ' on' : ''));
+      $wires.appendChild(poly);
+    });
+  }
+
+  // ▶ Play: walk this phase's non-external nodes in column order.
+  document.getElementById('wfPlay').onclick = async () => {
+    if (playing) return;
+    playing = true;
+    const steps = phase.nodes.filter(n => n.kind !== 'ext').sort((a, b) => a.col - b.col);
+    for (const n of steps) { pick(n.id); await new Promise(r => setTimeout(r, 700)); }
+    playing = false;
+  };
+
+  new ResizeObserver(() => phase && draw()).observe($flow);
+  try { const s = localStorage.getItem('lang'); if (s === 'vi' || s === 'en') setLang(s); } catch (e) {}
+  show(FOCUS_PHASE);
+})();
+</script>
